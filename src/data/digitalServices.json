@@ -1,0 +1,39 @@
+{
+  "digitalServices": [
+    {
+      "id": 1,
+      "title": "Pdf to Text",
+      "description": "Extract text content from PDF files using OCR technology.",
+      "slug": "pdfToText",
+      "isFeatured": true
+    },
+    {
+      "id": 2,
+      "title": "Image to Text",
+      "description": "Convert images into editable text with fast, accurate OCR.",
+      "slug": "imageToText",
+      "isFeatured": true
+    },
+    {
+      "id": 3,
+      "title": "Image Resize",
+      "description": "Resize images to custom or standard sizes quickly and easily.",
+      "slug": "imageResize",
+      "isFeatured": true
+    },
+    {
+      "id": 4,
+      "title": "Background Remove",
+      "description": "Remove the background from any image automatically.",
+      "slug": "backgroundRemove",
+      "isFeatured": false
+    },
+    {
+      "id": 5,
+      "title": "Edit Image",
+      "description": "Enhance and modify your images with powerful editing tools.",
+      "slug": "editImage",
+      "isFeatured": true
+    }
+  ]
+}
