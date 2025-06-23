@@ -13,7 +13,7 @@ export const config = {
   matcher: [
     "/profile",
     "/dashboard",
-    "/subscription",
+    "/subscription/:path*",
     "/payment/:path*",
     // Only protect subpaths of /digitalServices, not the base path itself
     "/digitalServices/(.+)",

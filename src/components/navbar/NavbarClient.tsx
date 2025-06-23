@@ -208,9 +208,32 @@ const NavbarClient = ({ className, session }: Props) => {
                       </Link>
                     </li>
                     <li>
-                      <a className="block text-white py-2 px-2 rounded hover:bg-zinc-800 transition cursor-pointer">
-                        Settings
-                      </a>
+                      <Link href="/subscription/details">
+                        <div className="block text-white py-2 px-2 rounded hover:bg-zinc-800 transition cursor-pointer">
+                          Subscription Details
+                        </div>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/payment/history">
+                        <div className="block text-white py-2 px-2 rounded hover:bg-zinc-800 transition cursor-pointer">
+                          Payment History
+                        </div>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/activity">
+                        <div className="block text-white py-2 px-2 rounded hover:bg-zinc-800 transition cursor-pointer">
+                          Activity Logs
+                        </div>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/settings">
+                        <div className="block text-white py-2 px-2 rounded hover:bg-zinc-800 transition cursor-pointer">
+                          Settings
+                        </div>
+                      </Link>
                     </li>
                     <li>
                       <button
@@ -292,9 +315,32 @@ const NavbarClient = ({ className, session }: Props) => {
                       </Link>
                     </li>
                     <li>
-                      <a className="block text-white py-2 px-2 rounded hover:bg-zinc-800 transition cursor-pointer">
-                        Settings
-                      </a>
+                      <Link href="/subscription/details">
+                        <div className="block text-white py-2 px-2 rounded hover:bg-zinc-800 transition cursor-pointer">
+                          Subscription Details
+                        </div>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/payment/history">
+                        <div className="block text-white py-2 px-2 rounded hover:bg-zinc-800 transition cursor-pointer">
+                          Payment History
+                        </div>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/activity">
+                        <div className="block text-white py-2 px-2 rounded hover:bg-zinc-800 transition cursor-pointer">
+                          Activity Logs
+                        </div>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/settings">
+                        <div className="block text-white py-2 px-2 rounded hover:bg-zinc-800 transition cursor-pointer">
+                          Settings
+                        </div>
+                      </Link>
                     </li>
                     <li>
                       <button
