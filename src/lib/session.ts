@@ -1,13 +1,14 @@
 import { cookies } from "next/headers";
 import { decryptSessionCookie } from "./jose-cookie";
+import { Role } from "./enums/role.enum";
 
 export type Session = {
   user: {
     id: string;
     name: string;
-    role: string; // e.g., "USER", "ADMIN"
+    role: Role;
+    email: string;
     profileImage: string;
-    //TODO: Need to add role here for role based access control
   };
   accessToken: string;
   refreshToken: string;

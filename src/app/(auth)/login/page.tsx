@@ -18,7 +18,7 @@ export default function Login() {
         password,
       });
       if (res.status === 200) {
-        window.location.href = "/profile";
+        window.location.href = "/";
       } else {
         setError(res.data?.message || "Invalid login credentials");
       }

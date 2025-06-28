@@ -139,7 +139,7 @@ export default function FaceLoginPage() {
       setResult({ text: data.message, success: true });
       setTimeout(() => {
         stopVideoStream(videoRef.current);
-        router.push("/profile");
+        router.push("/");
       }, 500);
     } catch (err: any) {
       setSpinner(false);
