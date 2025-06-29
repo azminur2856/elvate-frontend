@@ -1,8 +1,9 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { BACKEND_URL } from "./constants";
 
 // Create an Axios instance with base config
 const api = axios.create({
-  baseURL: "http://localhost:8000", // Change as needed
+  baseURL: BACKEND_URL, // Change as needed
   withCredentials: true, // Send cookies with requests
 });
 
