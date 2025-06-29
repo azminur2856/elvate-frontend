@@ -99,8 +99,7 @@ function Footer() {
         {/* Contact */}
         <div>
           <h2 className="text-white text-lg font-semibold mb-4">Contact Us</h2>
-          <p>Dhaka, Bangladesh</p>
-          <p>1207, Dhanmondi</p>
+          <p>Ka-96/1, Kazi Bari, Kuril Bisho Road, Dhaka, Bangladesh</p>
           <p>
             Email:{" "}
             <a href="mailto:support@elvate.com" className="hover:text-white">

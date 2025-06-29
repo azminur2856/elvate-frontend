@@ -93,10 +93,10 @@ export default function PaymentSuccessPage() {
           )}
         </div>
         <button
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push("/digitalServices")}
           className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
         >
-          Go to Dashboard
+          Go to Digital Services
         </button>
       </div>
     </div>
