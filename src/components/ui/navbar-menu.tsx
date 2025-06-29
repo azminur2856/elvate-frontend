@@ -1,8 +1,9 @@
 "use client";
 import React from "react";
 import { motion } from "motion/react";
+import type { Transition } from "framer-motion";
 
-const transition = {
+const transition: Transition = {
   type: "spring",
   mass: 0.5,
   damping: 11.5,
