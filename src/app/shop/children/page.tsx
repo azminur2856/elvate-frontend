@@ -1,8 +1,7 @@
 "use client";
-import { ReactNode } from "react";
 import { FaMale, FaFemale } from "react-icons/fa";
 
-export default function ChildrenPage({ children }: { children: ReactNode }) {
+export default function ChildrenPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
       <div className="bg-neutral-900/90 rounded-2xl border border-neutral-800 shadow-lg px-8 py-12 flex flex-col items-center">
@@ -21,7 +20,6 @@ export default function ChildrenPage({ children }: { children: ReactNode }) {
         <span className="bg-blue-900/30 text-blue-300 px-4 py-1 rounded text-sm font-medium">
           Under Development
         </span>
-        <div className="mt-6 w-full flex flex-col items-center">{children}</div>
       </div>
     </div>
   );
