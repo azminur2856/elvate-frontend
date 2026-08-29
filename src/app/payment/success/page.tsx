@@ -1,11 +1,20 @@
-// src/app/payment/success/page.tsx
-"use client";
+import type { Metadata } from "next";
 import { Suspense } from "react";
+import { PageShell } from "@/components/shared/PageShell";
+import { Skeleton } from "@/components/ui/skeleton";
 import PaymentSuccessClient from "./PaymentSuccessClient";
 
-export default function Page() {
+export const metadata: Metadata = { title: "Payment successful" };
+
+export default function PaymentSuccessPage() {
   return (
-    <Suspense fallback={<div className="text-white p-8">Loading...</div>}>
+    <Suspense
+      fallback={
+        <PageShell width="sm" center>
+          <Skeleton className="h-72 w-full" />
+        </PageShell>
+      }
+    >
       <PaymentSuccessClient />
     </Suspense>
   );

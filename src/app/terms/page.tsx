@@ -1,97 +1,66 @@
-"use client";
+import type { Metadata } from "next";
+import { PageShell } from "@/components/shared/PageShell";
+
+export const metadata: Metadata = {
+  title: "Terms & Conditions",
+  description: "The terms that govern your use of Elvate.",
+};
+
+const sections: { title: string; body: string }[] = [
+  {
+    title: "1. Acceptance of terms",
+    body: "By accessing and using this website, you accept and agree to be bound by these terms. If you do not agree, please do not use the site or our services.",
+  },
+  {
+    title: "2. Modifications",
+    body: "We may modify these terms at any time. Changes take effect immediately upon posting on this page, and continued use of the service constitutes acceptance of those changes.",
+  },
+  {
+    title: "3. User accounts",
+    body: "You are responsible for keeping your account and password confidential and for restricting access to your account. You accept responsibility for all activity that occurs under it.",
+  },
+  {
+    title: "4. Use of service",
+    body: "You agree not to misuse the services or help anyone else do so. Misuse includes interfering with the services or accessing them by any method other than the interface and instructions we provide.",
+  },
+  {
+    title: "5. Limitation of liability",
+    body: "In no event shall Elvate, its directors, employees, partners, agents, suppliers or affiliates be liable for any indirect, incidental, special, consequential or punitive damages — including loss of profits, data, use, goodwill or other intangible losses — resulting from your use of or inability to use the service, or any unauthorised access to our servers or the personal information stored there.",
+  },
+  {
+    title: "6. Governing law",
+    body: "These terms are governed by and construed in accordance with the laws of Bangladesh, without regard to conflict-of-law provisions.",
+  },
+];
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center px-4 py-25 font-sans">
-      <div className="max-w-3xl w-full bg-neutral-900 rounded-2xl shadow-xl border border-neutral-800 p-8">
-        <h1 className="text-4xl font-bold mb-5 text-blue-500 text-center">
-          Terms & Conditions
-        </h1>
-        <p className="mb-8 text-neutral-300 text-center">
-          Please read these terms and conditions ("terms", "terms and
-          conditions") carefully before using our website or services.
+    <PageShell
+      width="md"
+      title="Terms & Conditions"
+      description="Please read these terms carefully before using our website or services."
+    >
+      <article className="grid max-w-prose gap-8">
+        {sections.map((s) => (
+          <section key={s.title}>
+            <h2 className="mb-2 text-xl font-semibold">{s.title}</h2>
+            <p className="leading-relaxed text-muted-foreground">{s.body}</p>
+          </section>
+        ))}
+        <section>
+          <h2 className="mb-2 text-xl font-semibold">7. Contact us</h2>
+          <p className="leading-relaxed text-muted-foreground">
+            If you have any questions about these terms, contact us at{" "}
+            <a href="mailto:support@elvate.com" className="text-link hover:underline">
+              support@elvate.com
+            </a>
+            .
+          </p>
+        </section>
+        <p className="text-sm text-muted-foreground">
+          © {new Date().getFullYear()} Elvate. All rights reserved.
         </p>
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-2 text-blue-400">
-            1. Acceptance of Terms
-          </h2>
-          <p className="text-neutral-200">
-            By accessing and using this website, you accept and agree to be
-            bound by the terms and provision of this agreement. If you do not
-            agree to abide by the above, please do not use this site or our
-            services.
-          </p>
-        </section>
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-2 text-blue-400">
-            2. Modifications
-          </h2>
-          <p className="text-neutral-200">
-            We reserve the right to modify these terms at any time. Any changes
-            will be effective immediately upon posting on this page. Your
-            continued use of the service constitutes acceptance of those
-            changes.
-          </p>
-        </section>
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-2 text-blue-400">
-            3. User Accounts
-          </h2>
-          <p className="text-neutral-200">
-            You are responsible for maintaining the confidentiality of your
-            account and password and for restricting access to your account. You
-            agree to accept responsibility for all activities that occur under
-            your account.
-          </p>
-        </section>
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-2 text-blue-400">
-            4. Use of Service
-          </h2>
-          <p className="text-neutral-200">
-            You agree not to misuse the services or help anyone else do so.
-            Misuse includes, but is not limited to, interfering with the
-            services or accessing them using a method other than the interface
-            and instructions we provide.
-          </p>
-        </section>
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-2 text-blue-400">
-            5. Limitation of Liability
-          </h2>
-          <p className="text-neutral-200">
-            In no event shall we, nor our directors, employees, partners,
-            agents, suppliers, or affiliates, be liable for any indirect,
-            incidental, special, consequential or punitive damages, including
-            without limitation, loss of profits, data, use, goodwill, or other
-            intangible losses, resulting from (i) your use or inability to use
-            the service; (ii) any unauthorized access to or use of our servers
-            and/or any personal information stored therein.
-          </p>
-        </section>
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-2 text-blue-400">
-            6. Governing Law
-          </h2>
-          <p className="text-neutral-200">
-            These terms shall be governed and construed in accordance with the
-            laws of your country, without regard to its conflict of law
-            provisions.
-          </p>
-        </section>
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-2 text-blue-400">
-            7. Contact Us
-          </h2>
-          <p className="text-neutral-200">
-            If you have any questions about these Terms, please contact us at{" "}
-            <span className="text-blue-400">support@yourdomain.com</span>.
-          </p>
-        </section>
-        <div className="text-neutral-500 text-xs mt-8 text-center">
-          &copy; {new Date().getFullYear()} Your Company. All rights reserved.
-        </div>
-      </div>
-    </div>
+      </article>
+    </PageShell>
   );
 }
