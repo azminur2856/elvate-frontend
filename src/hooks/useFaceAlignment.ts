@@ -55,6 +55,7 @@ export function useFaceAlignment(
 
   useEffect(() => {
     if (!enabled) return;
+    const video = videoRef.current; // captured once so cleanup releases the same element
     let cancelled = false;
     let stream: MediaStream | undefined;
     let interval: ReturnType<typeof setInterval> | undefined;
@@ -71,7 +72,7 @@ export function useFaceAlignment(
           return;
         }
         stream = s;
-        if (videoRef.current) videoRef.current.srcObject = s;
+        if (video) video.srcObject = s;
       })
       .catch(() => !cancelled && setCameraError(true));
 
@@ -109,7 +110,7 @@ export function useFaceAlignment(
       cancelled = true;
       if (interval) clearInterval(interval);
       stream?.getTracks().forEach((t) => t.stop());
-      if (videoRef.current) videoRef.current.srcObject = null;
+      if (video) video.srcObject = null;
     };
   }, [enabled, videoRef]);
 
