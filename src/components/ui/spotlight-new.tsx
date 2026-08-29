@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 type SpotlightProps = {
   gradientFirst?: string;
@@ -14,6 +14,11 @@ type SpotlightProps = {
   xOffset?: number;
 };
 
+/**
+ * Ambient light beams for the hero (Aceternity). Purely decorative:
+ * pointer-events off, hidden from assistive tech by the parent, and static
+ * under prefers-reduced-motion.
+ */
 export const Spotlight = ({
   gradientFirst = "radial-gradient(68.54% 68.72% at 55.02% 31.46%, hsla(210, 100%, 85%, .08) 0, hsla(210, 100%, 55%, .02) 50%, hsla(210, 100%, 45%, 0) 80%)",
   gradientSecond = "radial-gradient(50% 50% at 50% 50%, hsla(210, 100%, 85%, .06) 0, hsla(210, 100%, 55%, .02) 80%, transparent 100%)",
@@ -25,102 +30,49 @@ export const Spotlight = ({
   duration = 7,
   xOffset = 100,
 }: SpotlightProps = {}) => {
+  const reduced = useReducedMotion();
+  const sweep = (offset: number) =>
+    reduced
+      ? undefined
+      : {
+          animate: { x: [0, offset, 0] },
+          transition: { duration, repeat: Infinity, repeatType: "reverse" as const, ease: "easeInOut" as const },
+        };
+
   return (
     <motion.div
-      initial={{
-        opacity: 0,
-      }}
-      animate={{
-        opacity: 1,
-      }}
-      transition={{
-        duration: 1.5,
-      }}
-      className="pointer-events-none absolute inset-0 h-full w-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.5 }}
+      className="pointer-events-none absolute inset-0 overflow-hidden"
     >
-      <motion.div
-        animate={{
-          x: [0, xOffset, 0],
-        }}
-        transition={{
-          duration,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-        }}
-        className="absolute top-0 left-0 w-screen h-screen z-40 pointer-events-none"
-      >
+      <motion.div {...sweep(xOffset)} className="pointer-events-none absolute inset-y-0 left-0 w-full">
         <div
-          style={{
-            transform: `translateY(${translateY}px) rotate(-45deg)`,
-            background: gradientFirst,
-            width: `${width}px`,
-            height: `${height}px`,
-          }}
-          className={`absolute top-0 left-0`}
+          style={{ transform: `translateY(${translateY}px) rotate(-45deg)`, background: gradientFirst, width, height }}
+          className="absolute left-0 top-0"
         />
-
         <div
-          style={{
-            transform: "rotate(-45deg) translate(5%, -50%)",
-            background: gradientSecond,
-            width: `${smallWidth}px`,
-            height: `${height}px`,
-          }}
-          className={`absolute top-0 left-0 origin-top-left`}
+          style={{ transform: "rotate(-45deg) translate(5%, -50%)", background: gradientSecond, width: smallWidth, height }}
+          className="absolute left-0 top-0 origin-top-left"
         />
-
         <div
-          style={{
-            transform: "rotate(-45deg) translate(-180%, -70%)",
-            background: gradientThird,
-            width: `${smallWidth}px`,
-            height: `${height}px`,
-          }}
-          className={`absolute top-0 left-0 origin-top-left`}
+          style={{ transform: "rotate(-45deg) translate(-180%, -70%)", background: gradientThird, width: smallWidth, height }}
+          className="absolute left-0 top-0 origin-top-left"
         />
       </motion.div>
 
-      <motion.div
-        animate={{
-          x: [0, -xOffset, 0],
-        }}
-        transition={{
-          duration,
-          repeat: Infinity,
-          repeatType: "reverse",
-          ease: "easeInOut",
-        }}
-        className="absolute top-0 right-0 w-screen h-screen z-40 pointer-events-none"
-      >
+      <motion.div {...sweep(-xOffset)} className="pointer-events-none absolute inset-y-0 right-0 w-full">
         <div
-          style={{
-            transform: `translateY(${translateY}px) rotate(45deg)`,
-            background: gradientFirst,
-            width: `${width}px`,
-            height: `${height}px`,
-          }}
-          className={`absolute top-0 right-0`}
+          style={{ transform: `translateY(${translateY}px) rotate(45deg)`, background: gradientFirst, width, height }}
+          className="absolute right-0 top-0"
         />
-
         <div
-          style={{
-            transform: "rotate(45deg) translate(-5%, -50%)",
-            background: gradientSecond,
-            width: `${smallWidth}px`,
-            height: `${height}px`,
-          }}
-          className={`absolute top-0 right-0 origin-top-right`}
+          style={{ transform: "rotate(45deg) translate(-5%, -50%)", background: gradientSecond, width: smallWidth, height }}
+          className="absolute right-0 top-0 origin-top-right"
         />
-
         <div
-          style={{
-            transform: "rotate(45deg) translate(180%, -70%)",
-            background: gradientThird,
-            width: `${smallWidth}px`,
-            height: `${height}px`,
-          }}
-          className={`absolute top-0 right-0 origin-top-right`}
+          style={{ transform: "rotate(45deg) translate(180%, -70%)", background: gradientThird, width: smallWidth, height }}
+          className="absolute right-0 top-0 origin-top-right"
         />
       </motion.div>
     </motion.div>

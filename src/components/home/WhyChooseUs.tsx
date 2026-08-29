@@ -1,51 +1,47 @@
-"use client";
-import React from "react";
 import { StickyScroll } from "../ui/sticky-scroll-reveal";
+import { SectionHeading } from "./SectionHeading";
 
-const elvatePlatformContent = [
+const content = [
   {
-    title:
-      "Transform the Way You Shop and Work Online With ELVATE’s All-in-One Digital Marketplace",
+    title: "One marketplace for shopping and digital work",
     description:
-      "Welcome to ELVATE—the next generation platform where online shopping meets instant digital productivity. Discover a handpicked selection of trending products, gadgets, lifestyle essentials, and exclusive deals, all in one secure marketplace. But that’s not all: ELVATE empowers you with state-of-the-art digital services such as one-click PDF conversion, AI-powered image editing, and smart document tools, designed to save you time and boost your creativity. Whether you’re browsing for new products or enhancing your workflow, ELVATE puts the future of e-commerce and digital tools at your fingertips.",
+      "Elvate is where online shopping meets instant digital productivity. Discover trending products, gadgets and exclusive deals in one secure marketplace — and use state-of-the-art tools like one-click PDF conversion and AI-powered image editing without leaving the site.",
   },
   {
-    title:
-      "Experience Lightning-Fast Digital Tools for Everyday Life, From Image Editing to Smart File Conversion",
+    title: "Lightning-fast tools for everyday life",
     description:
-      "Stop wasting hours searching for separate apps—ELVATE gives you instant access to powerful digital services right from your browser. Need to extract text from a PDF, resize a profile photo, remove image backgrounds, or convert documents on the fly? Our AI-driven tools deliver results in seconds, with no downloads or technical skills required. Built for busy students, professionals, and creators, ELVATE’s digital suite works 24/7 to help you get more done with less hassle.",
+      "Stop hunting for separate apps. Extract text from a PDF, resize a profile photo, remove an image background or convert documents on the fly — results in seconds, no downloads, no technical skills required.",
   },
   {
-    title:
-      "Seamless Shopping and Digital Service Integration—One Account, Endless Possibilities",
+    title: "One account, endless possibilities",
     description:
-      "Why juggle multiple websites and subscriptions? ELVATE’s unified platform lets you shop for the latest products and access digital tools all in a single, easy-to-use account. Manage your orders, access premium digital features, and enjoy a smooth, consistent experience—whether you’re buying, editing, or creating. Everything you need to power your work and your world is just a click away.",
+      "Shop for the latest products and access digital tools from a single, easy-to-use account. Manage your orders, unlock premium features and enjoy a consistent experience whether you're buying, editing or creating.",
   },
   {
-    title:
-      "Unlock Exclusive Benefits and VIP Perks With ELVATE Premium Membership",
+    title: "Exclusive benefits with Elvate Premium",
     description:
-      "Upgrade your experience with ELVATE Premium. Members enjoy special discounts on every purchase, free access or enhanced limits to digital services, priority customer support, and exclusive early-bird access to new features and products. It’s the perfect solution for frequent shoppers, digital entrepreneurs, and anyone who values extra convenience and savings. Join the ELVATE Premium community and get more from every click.",
+      "Members enjoy discounts on every purchase, enhanced limits on digital services, priority support and early access to new features and products.",
   },
   {
-    title:
-      "Your Security, Privacy, and Satisfaction—Guaranteed Every Step of the Way",
+    title: "Security, privacy and satisfaction — guaranteed",
     description:
-      "At ELVATE, your trust is everything. That’s why we invest in industry-leading security, end-to-end encryption, and transparent privacy policies. Shop confidently with secure payments and fast delivery. Use our digital services knowing your files and data are protected, never shared or sold. Our dedicated team is here to support you, ensuring a safe and satisfying experience from start to finish.",
+      "Industry-leading security, end-to-end encryption and transparent privacy policies. Pay securely, get fast delivery, and use our tools knowing your files are never shared or sold.",
   },
   {
-    title:
-      "Constant Innovation: New Products, New Tools, New Opportunities—All For You",
+    title: "Constant innovation",
     description:
-      "We believe in continuous improvement and customer-driven innovation. ELVATE is always expanding—adding the latest gadgets, must-have accessories, and cutting-edge digital features based on your feedback. Our goal is to be the only online destination you need for shopping and digital solutions. Tell us what you want to see next and help us build the platform of tomorrow.",
+      "We keep adding the latest gadgets, must-have accessories and cutting-edge digital features based on your feedback. Tell us what you want next and help us build the platform of tomorrow.",
   },
 ];
 
 function WhyChooseUs() {
   return (
-    <div>
-      <StickyScroll content={elvatePlatformContent} />
-    </div>
+    <section className="bg-muted/40 py-16 sm:py-20" aria-labelledby="why-elvate">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <SectionHeading eyebrow="Why Elvate" title="Everything you need, in one place" className="mb-12" />
+        <StickyScroll content={content} />
+      </div>
+    </section>
   );
 }
 

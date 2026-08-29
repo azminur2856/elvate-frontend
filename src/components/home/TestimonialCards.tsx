@@ -1,62 +1,58 @@
-"use client";
 import { InfiniteMovingCards } from "../ui/infinite-moving-cards";
+import { SectionHeading } from "./SectionHeading";
 
-const elvatePlatformTestimonials = [
+const testimonials = [
   {
     quote:
-      "ELVATE is a game changer! I can edit images, convert files, and shop for everything I need in one place. It’s so intuitive—my workflow has never been smoother.",
+      "Elvate is a game changer. I can edit images, convert files and shop for everything I need in one place — my workflow has never been smoother.",
     name: "Ayesha Rahman",
-    title: "Freelance Designer",
+    title: "Freelance designer",
   },
   {
     quote:
-      "The background removal and PDF tools are fantastic. ELVATE saves me hours every week, and the customer support is always prompt and helpful.",
+      "The background removal and PDF tools are fantastic. Elvate saves me hours every week, and support is always prompt and helpful.",
     name: "Md. Tanvir Hossain",
-    title: "Startup Founder",
+    title: "Startup founder",
   },
   {
     quote:
-      "Finally, an online marketplace where I can purchase quality products and use digital tools without switching between dozens of websites. ELVATE is my daily go-to!",
+      "Finally, a marketplace where I can buy quality products and use digital tools without switching between a dozen websites.",
     name: "Nusrat Jahan",
-    title: "University Student",
+    title: "University student",
   },
   {
     quote:
-      "The subscription unlocks so many extra features—totally worth it! Batch processing images and one-click downloads have made my client projects so much faster.",
+      "The subscription unlocks so many extra features — totally worth it. Batch image processing has made my client projects much faster.",
     name: "Imran Alam",
-    title: "Photographer & Creator",
+    title: "Photographer & creator",
   },
   {
     quote:
-      "What I love about ELVATE is the peace of mind. My data feels safe, my transactions are secure, and every tool just works, right out of the box.",
+      "What I love about Elvate is the peace of mind. My data feels safe, transactions are secure, and every tool just works.",
     name: "Sharmin Akter",
-    title: "E-commerce Seller",
+    title: "E-commerce seller",
   },
   {
     quote:
-      "ELVATE has truly elevated my productivity. From shopping for gadgets to quick file conversions, everything is seamless and reliable.",
+      "From shopping for gadgets to quick file conversions, everything is seamless and reliable.",
     name: "Mehedi Hasan",
-    title: "Tech Enthusiast",
+    title: "Tech enthusiast",
   },
 ];
 
-function ELVATEPlatformTestimonials() {
+function Testimonials() {
   return (
-    <div className="h-[40rem] w-full dark:bg-black dark:bg-grid-white/[0.2] relative flex flex-col items-center justify-center overflow-hidden">
-      <h2 className="text-3xl font-bold text-center mb-8 z-10">
-        Hear our Harmony: Voices of success
-      </h2>
-      <div className="flex justify-center w-full overflow-hidden px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-6xl">
-          <InfiniteMovingCards
-            items={elvatePlatformTestimonials}
-            direction="right"
-            speed="slow"
-          />
-        </div>
+    <section className="relative isolate overflow-hidden py-16 sm:py-20" aria-labelledby="testimonials">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-grid [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
+      />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <SectionHeading eyebrow="Testimonials" title="What people say about Elvate" className="mb-10" />
+        <InfiniteMovingCards items={testimonials} direction="right" speed="slow" />
       </div>
-    </div>
+    </section>
   );
 }
 
-export default ELVATEPlatformTestimonials;
+export default Testimonials;
