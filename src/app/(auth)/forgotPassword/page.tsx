@@ -140,16 +140,25 @@ export default function ForgotPasswordPage() {
               />
               <span>Email</span>
             </label>
-            <label className="flex items-center text-gray-200">
+            {/* SMS reset is not offered right now (no SMS credits in
+                production). The backend route still exists; only the UI is
+                blocked. Re-enable by removing `disabled` and restoring
+                onChange={() => setMethod("SMS")}. */}
+            <label
+              className="flex items-center text-gray-500 cursor-not-allowed"
+              title="SMS reset is currently unavailable. Please use Email."
+            >
               <input
                 type="radio"
                 name="method"
                 value="SMS"
-                checked={method === "SMS"}
-                onChange={() => setMethod("SMS")}
-                className="mr-1 accent-blue-600"
+                checked={false}
+                disabled
+                className="mr-1 accent-blue-600 cursor-not-allowed"
               />
-              <span>SMS</span>
+              <span>
+                SMS <span className="text-xs">(unavailable)</span>
+              </span>
             </label>
           </div>
           <button
