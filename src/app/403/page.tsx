@@ -1,15 +1,14 @@
-// app/forbidden/page.tsx
-"use client";
-import { FaBan } from "react-icons/fa";
+import type { Metadata } from "next";
+import { StatusPage } from "@/components/shared/StatusPage";
+
+export const metadata: Metadata = { title: "Access denied" };
 
 export default function ForbiddenPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
-      <FaBan className="text-red-500 text-7xl mb-6" />
-      <h1 className="text-5xl font-bold mb-2">403 Forbidden</h1>
-      <p className="mb-4 text-xl">
-        You are not an admin and cannot access this page.
-      </p>
-    </div>
+    <StatusPage
+      code={403}
+      title="Access denied"
+      description="This area is for administrators only."
+    />
   );
 }

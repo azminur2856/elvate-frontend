@@ -1,116 +1,89 @@
 import Link from "next/link";
-import { FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
+import { Facebook, Instagram, Twitter } from "lucide-react";
+
+const quickLinks = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Digital Services", href: "/digitalServices" },
+  { label: "Shop", href: "/shop" },
+  { label: "Subscription", href: "/subscription" },
+  { label: "Contact", href: "/contact" },
+  { label: "Terms & Conditions", href: "/terms" },
+];
+
+const socials = [
+  { label: "Facebook", href: "https://facebook.com/elvatebd", icon: Facebook },
+  { label: "Twitter", href: "https://twitter.com/elvatebd", icon: Twitter },
+  { label: "Instagram", href: "https://instagram.com/elvatebd", icon: Instagram },
+];
 
 function Footer() {
   return (
-    <footer className="bg-black text-gray-400 py-12">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-4 sm:px-6 lg:px-8">
-        {/* About */}
+    <footer className="border-t border-border bg-card text-muted-foreground">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div>
-          <h2 className="text-white text-lg font-semibold mb-4">
-            About ELVATE
-          </h2>
-          <p className="mb-4">
-            ELVATE is your trusted platform for innovative digital services and
-            secure online shopping in Bangladesh. Empowering creators,
-            businesses, and everyday users with powerful tools and seamless
-            e-commerce experiences—all in one place.
+          <h2 className="mb-4 text-lg font-semibold text-foreground">About Elvate</h2>
+          <p className="text-sm leading-relaxed">
+            Elvate is your trusted platform for innovative digital services and
+            secure online shopping in Bangladesh — powerful tools and a seamless
+            e-commerce experience, all in one place.
           </p>
         </div>
-        {/* Quick Links */}
+
+        <nav aria-label="Footer">
+          <h2 className="mb-4 text-lg font-semibold text-foreground">Quick links</h2>
+          <ul className="grid gap-2 text-sm">
+            {quickLinks.map((l) => (
+              <li key={l.href}>
+                <Link
+                  href={l.href}
+                  className="transition-colors hover:text-foreground"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
         <div>
-          <h2 className="text-white text-lg font-semibold mb-4">Quick Links</h2>
-          <ul>
-            <li>
-              <Link
-                href="/"
-                className="hover:text-white transition-colors duration-300"
-              >
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/about"
-                className="hover:text-white transition-colors duration-300"
-              >
-                About
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/digitalServices"
-                className="hover:text-white transition-colors duration-300"
-              >
-                Digital Services
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/shop"
-                className="hover:text-white transition-colors duration-300"
-              >
-                Shop
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/contact"
-                className="hover:text-white transition-colors duration-300"
-              >
-                Contact
-              </Link>
-            </li>
+          <h2 className="mb-4 text-lg font-semibold text-foreground">Follow us</h2>
+          <ul className="flex gap-4">
+            {socials.map(({ label, href, icon: Icon }) => (
+              <li key={href}>
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${label} (opens in a new tab)`}
+                  className="inline-flex size-9 items-center justify-center rounded-md border border-border transition-colors hover:bg-accent hover:text-foreground"
+                >
+                  <Icon aria-hidden="true" className="size-4" />
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
-        {/* Social */}
-        <div>
-          <h2 className="text-white text-lg font-semibold mb-4">Follow Us</h2>
-          <div className="flex space-x-6 mt-1">
-            <a
-              href="https://facebook.com/elvatebd"
-              target="_blank"
-              rel="noopener"
-              className="hover:text-blue-500 text-xl transition-colors duration-300"
-              aria-label="Facebook"
-            >
-              <FaFacebookF />
-            </a>
-            <a
-              href="https://twitter.com/elvatebd"
-              target="_blank"
-              rel="noopener"
-              className="hover:text-sky-400 text-xl transition-colors duration-300"
-              aria-label="Twitter"
-            >
-              <FaTwitter />
-            </a>
-            <a
-              href="https://instagram.com/elvatebd"
-              target="_blank"
-              rel="noopener"
-              className="hover:text-pink-500 text-xl transition-colors duration-300"
-              aria-label="Instagram"
-            >
-              <FaInstagram />
-            </a>
-          </div>
-        </div>
-        {/* Contact */}
-        <div>
-          <h2 className="text-white text-lg font-semibold mb-4">Contact Us</h2>
+
+        <address className="text-sm not-italic leading-relaxed">
+          <h2 className="mb-4 text-lg font-semibold text-foreground">Contact us</h2>
           <p>Ka-96/1, Kazi Bari, Kuril Bisho Road, Dhaka, Bangladesh</p>
-          <p>
+          <p className="mt-2">
             Email:{" "}
-            <a href="mailto:support@elvate.com" className="hover:text-white">
+            <a href="mailto:support@elvate.com" className="text-link hover:underline">
               support@elvate.com
             </a>
           </p>
-          <p>Phone: +880 1234-567890</p>
-        </div>
+          <p>
+            Phone:{" "}
+            <a href="tel:+8801234567890" className="hover:text-foreground">
+              +880 1234-567890
+            </a>
+          </p>
+        </address>
       </div>
-      <p className="text-center text-xs pt-8">
-        © {new Date().getFullYear()} ELVATE. All rights reserved.
+      <p className="border-t border-border px-4 py-6 text-center text-sm">
+        © {new Date().getFullYear()} Elvate. All rights reserved.
       </p>
     </footer>
   );

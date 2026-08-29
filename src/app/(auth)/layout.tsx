@@ -1,9 +1,9 @@
-import React, { PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
 
-const AuthLayout = ({ children }: PropsWithChildren) => {
+export default function AuthLayout({ children }: PropsWithChildren) {
   return (
-    <div className="h-screen flex items-center justify-center">{children}</div>
+    <div className="flex min-h-[calc(100svh-var(--navbar-h))] items-center justify-center px-4 py-10">
+      {children}
+    </div>
   );
-};
-
-export default AuthLayout;
+}

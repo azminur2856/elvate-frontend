@@ -1,7 +1,17 @@
 "use client";
-import api from "@/lib/api";
-import { useSearchParams, useRouter } from "next/navigation";
+
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import api from "@/lib/api";
+import { getErrorMessage } from "@/lib/errors";
+import { AuthCard } from "@/components/auth/AuthCard";
+import { FormField } from "@/components/forms/FormField";
+import { FormMessage } from "@/components/forms/FormMessage";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+type Status = { type: "success" | "error"; text: string } | null;
 
 export default function ResetPasswordClient() {
   const searchParams = useSearchParams();
@@ -10,22 +20,24 @@ export default function ResetPasswordClient() {
 
   const [newPassword, setNewPassword] = useState("");
   const [rePassword, setRePassword] = useState("");
-  const [msg, setMsg] = useState<string | null>(null);
+  const [status, setStatus] = useState<Status>(null);
   const [loading, setLoading] = useState(false);
+
+  const mismatch = rePassword.length > 0 && newPassword !== rePassword;
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMsg(null);
+    setStatus(null);
     if (!token) {
-      setMsg("Invalid or missing reset token.");
+      setStatus({ type: "error", text: "This reset link is invalid or missing its token." });
       return;
     }
-    if (!newPassword || newPassword.length < 6) {
-      setMsg("Password must be at least 6 characters.");
+    if (newPassword.length < 6) {
+      setStatus({ type: "error", text: "Password must be at least 6 characters." });
       return;
     }
     if (newPassword !== rePassword) {
-      setMsg("Passwords do not match.");
+      setStatus({ type: "error", text: "Passwords do not match." });
       return;
     }
     setLoading(true);
@@ -35,82 +47,62 @@ export default function ResetPasswordClient() {
         resetTokenOrOTP: token,
         newPassword,
       });
-      setMsg(res.data.message || "Password reset successful.");
-      setTimeout(() => {
-        router.replace("/login");
-      }, 1500);
-    } catch (err: any) {
-      setMsg(
-        err?.response?.data?.message ||
-          err?.response?.data?.error ||
-          err?.message ||
-          "Something went wrong."
-      );
+      setStatus({
+        type: "success",
+        text: res.data?.message || "Password reset. Redirecting to log in…",
+      });
+      setTimeout(() => router.replace("/login"), 1500);
+    } catch (err) {
+      setStatus({ type: "error", text: getErrorMessage(err, "Could not reset the password.") });
     } finally {
       setLoading(false);
     }
   };
 
-  const isMismatch = rePassword.length > 0 && newPassword !== rePassword;
-
   return (
-    <div className="min-h-screen flex items-center justify-center font-sans">
-      <div className="bg-neutral-900/95 border border-neutral-800 p-8 rounded-2xl shadow-2xl w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4 text-center text-white">
-          Reset Password
-        </h2>
-        <form onSubmit={handleReset} className="flex flex-col gap-3">
-          <label className="block text-sm font-medium text-gray-200">
-            New Password
-            <input
-              type="password"
-              className="mt-1 block w-full border border-neutral-700 bg-neutral-800 text-white placeholder-gray-400 rounded-md px-3 py-2 focus:ring focus:ring-blue-500 focus:outline-none"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-          </label>
-          <label className="block text-sm font-medium text-gray-200">
-            Re-enter New Password
-            <input
-              type="password"
-              className="mt-1 block w-full border border-neutral-700 bg-neutral-800 text-white placeholder-gray-400 rounded-md px-3 py-2 focus:ring focus:ring-blue-500 focus:outline-none"
-              value={rePassword}
-              onChange={(e) => setRePassword(e.target.value)}
-              required
-            />
-            {isMismatch && (
-              <span className="text-xs text-red-400 mt-1 block">
-                Passwords do not match.
-              </span>
-            )}
-          </label>
-          <button
-            type="submit"
-            disabled={
-              loading ||
-              !newPassword ||
-              !rePassword ||
-              newPassword !== rePassword ||
-              newPassword.length < 6
-            }
-            className="w-full bg-green-600 text-white py-2 rounded-md font-semibold hover:bg-green-700 transition disabled:bg-gray-600 disabled:cursor-not-allowed"
-          >
-            {loading ? "Resetting..." : "Reset Password"}
-          </button>
-          {msg && (
-            <p
-              className={`text-center text-sm mt-2 ${
-                msg.toLowerCase().includes("success")
-                  ? "text-green-400"
-                  : "text-red-400"
-              }`}
-            >
-              {msg}
-            </p>
-          )}
-        </form>
-      </div>
-    </div>
+    <AuthCard
+      title="Reset password"
+      description="Choose a new password for your account."
+      footer={
+        <Link href="/login" className="text-link hover:underline">
+          Back to log in
+        </Link>
+      }
+    >
+      <form onSubmit={handleReset} className="grid gap-4" noValidate>
+        {status ? <FormMessage variant={status.type}>{status.text}</FormMessage> : null}
+        <FormField id="new-password" label="New password" hint="At least 6 characters." required>
+          <Input
+            type="password"
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+          />
+        </FormField>
+        <FormField
+          id="re-password"
+          label="Re-enter new password"
+          error={mismatch ? "Passwords do not match." : undefined}
+          required
+        >
+          <Input
+            type="password"
+            autoComplete="new-password"
+            value={rePassword}
+            onChange={(e) => setRePassword(e.target.value)}
+            required
+          />
+        </FormField>
+        <Button
+          type="submit"
+          className="w-full"
+          loading={loading}
+          disabled={!newPassword || !rePassword || mismatch || newPassword.length < 6}
+        >
+          Reset password
+        </Button>
+      </form>
+    </AuthCard>
   );
 }
