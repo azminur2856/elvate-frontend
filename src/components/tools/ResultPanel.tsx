@@ -62,41 +62,35 @@ export function TextResultPanel({
     }
   };
 
-  if (busy) {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 text-muted-foreground">
-        <Spinner size="lg" label={busyLabel} />
-        <p aria-hidden="true">{busyLabel}</p>
-      </div>
-    );
-  }
-
-  if (!text) {
-    return (
-      <p
-        className="flex flex-1 items-center justify-center text-center text-muted-foreground"
-        aria-live="polite"
-      >
-        {emptyText}
-      </p>
-    );
-  }
-
+  // One persistent live region so state changes (busy → result) are announced.
   return (
-    <div className="flex flex-1 flex-col gap-3">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-medium">{label}</p>
-        <Button variant="outline" size="sm" onClick={handleCopy}>
-          {copied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
-          {copied ? "Copied" : "Copy"}
-        </Button>
-      </div>
-      <Textarea
-        readOnly
-        value={text}
-        aria-label={label}
-        className="min-h-72 flex-1 resize-none font-mono text-sm"
-      />
+    <div aria-live="polite" className="flex flex-1 flex-col">
+      {busy ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-muted-foreground">
+          <Spinner size="lg" label={busyLabel} />
+          <p aria-hidden="true">{busyLabel}</p>
+        </div>
+      ) : !text ? (
+        <p className="flex flex-1 items-center justify-center text-center text-muted-foreground">
+          {emptyText}
+        </p>
+      ) : (
+        <div className="flex flex-1 flex-col gap-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-medium">{label}</p>
+            <Button variant="outline" size="sm" onClick={handleCopy}>
+              {copied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+              {copied ? "Copied" : "Copy"}
+            </Button>
+          </div>
+          <Textarea
+            readOnly
+            value={text}
+            aria-label={label}
+            className="min-h-72 flex-1 resize-none font-mono text-sm"
+          />
+        </div>
+      )}
     </div>
   );
 }

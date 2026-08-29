@@ -132,7 +132,6 @@
   /* used by ui/infinite-moving-cards.tsx */
   --animate-scroll: scroll var(--animation-duration, 40s)
     var(--animation-direction, forwards) linear infinite;
-  --animate-fade-in: fade-in 0.2s ease-out both;
 }
 
 /* ------------------------------------------------------------------ */
@@ -205,17 +204,6 @@
 @keyframes scroll {
   to {
     transform: translate(calc(-50% - 0.5rem));
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
   }
 }
 

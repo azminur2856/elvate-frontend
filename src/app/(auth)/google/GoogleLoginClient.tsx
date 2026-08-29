@@ -25,7 +25,7 @@ export default function GoogleLoginClient() {
         <FormMessage variant="success">
           Welcome! You are now logged in with your Google account.
         </FormMessage>
-        <p className="text-sm text-muted-foreground" aria-live="polite">
+        <p className="text-sm text-muted-foreground">
           Taking you home in{" "}
           <span className="font-mono tabular-nums text-foreground">{countdown}</span>{" "}
           seconds…

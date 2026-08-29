@@ -39,12 +39,15 @@ export default function UpdateUserModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Re-seed only when the dialog opens or the underlying values change —
+  // not on every parent render (the parent passes a fresh object literal).
+  const { firstName, lastName, phone } = user;
   useEffect(() => {
     if (open) {
-      setForm(user);
+      setForm({ firstName, lastName, phone });
       setError("");
     }
-  }, [open, user]);
+  }, [open, firstName, lastName, phone]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });

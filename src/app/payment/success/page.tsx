@@ -10,7 +10,7 @@ export default function PaymentSuccessPage() {
   return (
     <Suspense
       fallback={
-        <PageShell width="sm" center>
+        <PageShell width="sm" title={<span className="sr-only">Checking your payment</span>} center>
           <Skeleton className="h-72 w-full" />
         </PageShell>
       }

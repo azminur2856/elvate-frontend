@@ -49,7 +49,7 @@ export function ToolPageShell({
         {action ? (
           <div className="flex items-center justify-center lg:flex-col">
             <div className="hidden h-full w-px bg-border lg:block" aria-hidden="true" />
-            <div className="w-full lg:absolute-none lg:w-auto lg:py-4">{action}</div>
+            <div className="w-full lg:w-auto lg:py-4">{action}</div>
             <div className="hidden h-full w-px bg-border lg:block" aria-hidden="true" />
           </div>
         ) : null}

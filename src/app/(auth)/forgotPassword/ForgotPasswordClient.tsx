@@ -21,8 +21,11 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
+type Method = "EMAIL" | "SMS";
+
 export default function ForgotPasswordClient() {
   const [email, setEmail] = useState("");
+  const [method, setMethod] = useState<Method>("EMAIL");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -34,7 +37,7 @@ export default function ForgotPasswordClient() {
     try {
       await api.post("/auth/forgotPassword", {
         email,
-        verificationMethod: "EMAIL",
+        verificationMethod: method,
       });
       setSentTo(email);
     } catch (err) {
@@ -73,7 +76,11 @@ export default function ForgotPasswordClient() {
             <legend className="text-sm font-medium">Send the reset via</legend>
             {/* SMS reset is not offered right now (no SMS credits in production).
                 The backend route still exists; only the option is disabled. */}
-            <RadioGroup defaultValue="EMAIL" className="flex gap-6">
+            <RadioGroup
+              value={method}
+              onValueChange={(v) => setMethod(v as Method)}
+              className="flex gap-6"
+            >
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="EMAIL" id="method-email" />
                 <Label htmlFor="method-email" className="font-normal">

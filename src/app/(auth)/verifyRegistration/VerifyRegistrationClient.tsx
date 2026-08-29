@@ -64,7 +64,7 @@ export default function VerifyRegistrationClient() {
         )}
         {status !== "verifying" ? (
           <>
-            <p className="text-sm text-muted-foreground" aria-live="polite">
+            <p className="text-sm text-muted-foreground">
               Redirecting in{" "}
               <span className="font-mono tabular-nums text-foreground">{countdown}</span>{" "}
               seconds…

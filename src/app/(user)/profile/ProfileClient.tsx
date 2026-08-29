@@ -110,7 +110,7 @@ export default function ProfileClient() {
 
   if (loading) {
     return (
-      <PageShell width="sm" center>
+      <PageShell width="sm" title={<span className="sr-only">Profile</span>} center>
         <div role="status" aria-label="Loading profile" className="grid w-full gap-4">
           <Skeleton className="mx-auto size-32 rounded-full" />
           <Skeleton className="mx-auto h-8 w-48" />
@@ -122,13 +122,14 @@ export default function ProfileClient() {
 
   if (error || !user) {
     return (
-      <PageShell width="sm" center>
+      <PageShell width="sm" title="Profile" center>
         <FormMessage variant="error">{error || "Profile not found."}</FormMessage>
       </PageShell>
     );
   }
 
   const name = `${user.firstName} ${user.lastName ?? ""}`.trim();
+  const updateData = { firstName: user.firstName, lastName: user.lastName, phone: user.phone };
 
   return (
     <PageShell width="sm" center>
@@ -193,7 +194,7 @@ export default function ProfileClient() {
                   <Badge variant="success">
                     Active · {subscription.daysLeft} day{subscription.daysLeft === 1 ? "" : "s"} left
                   </Badge>
-                  <span className="basis-full text-xs text-muted-foreground">
+                  <span className="basis-full text-sm text-muted-foreground">
                     {formatDate(subscription.startDate)} – {formatDate(subscription.endDate)}
                   </span>
                 </>
@@ -224,7 +225,7 @@ export default function ProfileClient() {
       <UpdateUserModal
         open={showUpdate}
         onClose={() => setShowUpdate(false)}
-        user={{ firstName: user.firstName, lastName: user.lastName, phone: user.phone }}
+        user={updateData}
         onSuccess={() => void refetchUser()}
       />
       <ChangePasswordModal open={showChangePassword} onClose={() => setShowChangePassword(false)} />

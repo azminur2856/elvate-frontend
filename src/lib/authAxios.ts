@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 import { BACKEND_URL } from "./constants";
 
 // Create an Axios instance with base config
@@ -64,21 +64,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-/**
- * Axios wrapper for fetch-like calls, using AxiosRequestConfig.
- * Always returns the response's `.data` (parsed JSON/body).
- *
- * Example:
- *   const data = await authAxios("/users/profile", { method: "get" });
- */
-export async function authAxios<T = unknown>(
-  url: string,
-  config: AxiosRequestConfig = {}
-): Promise<T> {
-  // Merge url into config, so user can pass other AxiosRequestConfig fields
-  const response = await api({ url, ...config });
-  return response.data;
-}
 
 export default api;

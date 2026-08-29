@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Clock, Download, Eraser, ImageIcon, RefreshCw } from "lucide-react";
+import { Clock, Eraser, ImageIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useToolUpload } from "@/hooks/useToolUpload";
 import SubscriptionRequiredModal from "@/components/modal/SubscriptionRequiredModal";
@@ -9,25 +8,22 @@ import { ActionButton } from "@/components/tools/ActionButton";
 import { DropZone } from "@/components/tools/DropZone";
 import { FileSummary } from "@/components/tools/FileSummary";
 import { ComingSoonBadge, ToolPageShell } from "@/components/tools/ToolPageShell";
-import { Button } from "@/components/ui/button";
 
 const ACCEPT = ["image/jpeg", "image/png", "image/jpg", "image/heic"];
 
+/**
+ * The backend endpoint (/ocr/image/remove-bg) is not live yet. The page keeps
+ * the upload flow so users can see the tool, and the action says so honestly.
+ * When the endpoint ships: call it via `tool.run`, keep the result as a data
+ * URL, and render it on a `bg-checkerboard` panel with a download button.
+ */
 export default function BackgroundRemoveClient() {
   const tool = useToolUpload({ accept: ACCEPT, acceptLabel: "JPG, PNG or HEIC" });
-  const [resultUrl, setResultUrl] = useState<string | null>(null);
 
-  // The backend endpoint (/ocr/image/remove-bg) is not live yet. Keep the UI
-  // usable and honest: the action explains that the feature is coming soon.
   const removeBackground = () => {
     toast("Background removal is coming soon.", {
       icon: <Clock aria-hidden="true" className="size-4" />,
     });
-  };
-
-  const reset = () => {
-    setResultUrl(null);
-    tool.remove();
   };
 
   return (
@@ -44,17 +40,14 @@ export default function BackgroundRemoveClient() {
               alt={`Preview of ${tool.file.name}`}
               className="max-h-72 max-w-full rounded-lg border border-border bg-muted object-contain"
             />
-            <FileSummary file={tool.file} onRemove={reset} disabled={tool.busy} />
+            <FileSummary file={tool.file} onRemove={tool.remove} disabled={tool.busy} />
           </div>
         ) : (
           <DropZone
             inputRef={tool.inputRef}
             accept=".jpg,.jpeg,.png,.heic"
             acceptLabel="JPG, PNG or HEIC"
-            onFile={(f) => {
-              setResultUrl(null);
-              tool.select(f);
-            }}
+            onFile={tool.select}
             icon={ImageIcon}
             title="Upload an image"
           />
@@ -66,41 +59,14 @@ export default function BackgroundRemoveClient() {
           icon={Eraser}
           onClick={removeBackground}
           loading={tool.busy}
-          disabled={!tool.file || !!resultUrl}
+          disabled={!tool.file}
         />
       }
       output={
-        resultUrl ? (
-          <div className="flex flex-1 flex-col items-center gap-3">
-            <div className="bg-checkerboard rounded-lg border border-border p-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={resultUrl}
-                alt="Image with the background removed"
-                className="max-h-72 max-w-full object-contain"
-              />
-            </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              <Button asChild>
-                <a href={resultUrl} download="no-bg.png">
-                  <Download aria-hidden="true" />
-                  Download PNG
-                </a>
-              </Button>
-              <Button variant="outline" onClick={reset}>
-                <RefreshCw aria-hidden="true" />
-                Try another
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <p
-            className="flex flex-1 items-center justify-center text-center text-muted-foreground"
-            aria-live="polite"
-          >
-            The result will appear here.
-          </p>
-        )
+        <div aria-live="polite" className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-muted-foreground">
+          <Clock aria-hidden="true" className="size-6" />
+          <p>This tool is coming soon. Your result will appear here once it launches.</p>
+        </div>
       }
     >
       <SubscriptionRequiredModal

@@ -11,6 +11,10 @@ function Slider({
   value,
   min = 0,
   max = 100,
+  id,
+  "aria-label": ariaLabel,
+  "aria-labelledby": ariaLabelledBy,
+  "aria-valuetext": ariaValueText,
   ...props
 }: React.ComponentProps<typeof SliderPrimitive.Root>) {
   const _values = React.useMemo(
@@ -49,11 +53,17 @@ function Slider({
           )}
         />
       </SliderPrimitive.Track>
+      {/* The thumb is the focusable role="slider" element, so the accessible
+          name, value text and id belong on it — not on the root. */}
       {Array.from({ length: _values.length }, (_, index) => (
         <SliderPrimitive.Thumb
           data-slot="slider-thumb"
           key={index}
-          className="block size-4 shrink-0 rounded-full border border-primary bg-white shadow-sm ring-ring/50 transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+          id={index === 0 ? id : undefined}
+          aria-label={ariaLabel}
+          aria-labelledby={ariaLabelledBy}
+          aria-valuetext={ariaValueText}
+          className="block size-4 shrink-0 rounded-full border border-primary bg-background shadow-sm ring-ring/50 transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
         />
       ))}
     </SliderPrimitive.Root>

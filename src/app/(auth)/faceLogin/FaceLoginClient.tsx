@@ -1,107 +1,29 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ScanFace } from "lucide-react";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errors";
+import { captureFrame, useFaceAlignment } from "@/hooks/useFaceAlignment";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { FormField } from "@/components/forms/FormField";
 import { FormMessage } from "@/components/forms/FormMessage";
-import { StatusIndicator, type FaceStatus } from "@/components/shared/StatusIndicator";
+import { StatusIndicator } from "@/components/shared/StatusIndicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const FACE_API_SCRIPT =
-  "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
-const FACE_API_MODELS = "https://justadudewhohacks.github.io/face-api.js/models";
-
 type Result = { type: "success" | "error"; text: string } | null;
-
-function stopVideoStream(video: HTMLVideoElement | null) {
-  if (video?.srcObject) {
-    (video.srcObject as MediaStream).getTracks().forEach((t) => t.stop());
-    video.srcObject = null;
-  }
-}
 
 export default function FaceLoginClient() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { status, cameraError } = useFaceAlignment(videoRef, true);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
-  const [status, setStatus] = useState<FaceStatus>("none");
   const [result, setResult] = useState<Result>(null);
   const [loading, setLoading] = useState(false);
-  const [modelsReady, setModelsReady] = useState(false);
-
-  // Load face-api.js (once) and its models.
-  useEffect(() => {
-    let cancelled = false;
-    async function loadModels() {
-      const faceapi = window.faceapi;
-      if (!faceapi) return;
-      await faceapi.nets.tinyFaceDetector.loadFromUri(FACE_API_MODELS);
-      await faceapi.nets.faceLandmark68Net.loadFromUri(FACE_API_MODELS);
-      if (!cancelled) setModelsReady(true);
-    }
-    if (window.faceapi) {
-      void loadModels();
-    } else {
-      const script = document.createElement("script");
-      script.src = FACE_API_SCRIPT;
-      script.async = true;
-      script.onload = () => void loadModels();
-      document.body.appendChild(script);
-    }
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // Camera.
-  useEffect(() => {
-    const video = videoRef.current;
-    navigator.mediaDevices
-      .getUserMedia({ video: true })
-      .then((stream) => {
-        if (video) video.srcObject = stream;
-      })
-      .catch(() => setResult({ type: "error", text: "Cannot access the webcam." }));
-    return () => stopVideoStream(video);
-  }, []);
-
-  // Live alignment feedback.
-  useEffect(() => {
-    if (!modelsReady) return;
-    let busy = false;
-    const detect = async () => {
-      const faceapi = window.faceapi;
-      if (busy || !faceapi || !videoRef.current) return;
-      busy = true;
-      try {
-        const detection = await faceapi
-          .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
-          .withFaceLandmarks();
-        if (!detection) {
-          setStatus("none");
-          return;
-        }
-        const leftEye = detection.landmarks.getLeftEye();
-        const rightEye = detection.landmarks.getRightEye();
-        const angle = Math.abs(
-          Math.atan2(rightEye[0].y - leftEye[0].y, rightEye[0].x - leftEye[0].x) *
-            (180 / Math.PI)
-        );
-        setStatus(angle < 10 ? "aligned" : angle < 25 ? "tilted" : "none");
-      } finally {
-        busy = false;
-      }
-    };
-    const interval = setInterval(() => void detect(), 500);
-    return () => clearInterval(interval);
-  }, [modelsReady]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,15 +38,7 @@ export default function FaceLoginClient() {
 
     setLoading(true);
     try {
-      const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.getContext("2d")?.drawImage(video, 0, 0);
-      const blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob(resolve, "image/jpeg")
-      );
-      if (!blob) throw new Error("Could not capture the camera frame.");
-
+      const blob = await captureFrame(video);
       const formData = new FormData();
       formData.append("email", email);
       formData.append("liveImage", blob, "live.jpg");
@@ -137,10 +51,7 @@ export default function FaceLoginClient() {
         return;
       }
       setResult({ type: "success", text: res.data.message || "Logged in." });
-      setTimeout(() => {
-        stopVideoStream(videoRef.current);
-        router.push("/");
-      }, 500);
+      setTimeout(() => router.push("/"), 500);
     } catch (err) {
       setResult({ type: "error", text: getErrorMessage(err, "Face login failed.") });
     } finally {
@@ -182,6 +93,11 @@ export default function FaceLoginClient() {
         </div>
         <StatusIndicator status={status} />
 
+        {cameraError ? (
+          <FormMessage variant="error">
+            Cannot access the webcam. Allow camera access and reload the page.
+          </FormMessage>
+        ) : null}
         {result ? <FormMessage variant={result.type}>{result.text}</FormMessage> : null}
 
         <Button type="submit" className="w-full" loading={loading}>

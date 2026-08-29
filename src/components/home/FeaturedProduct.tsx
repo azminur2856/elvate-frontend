@@ -13,7 +13,7 @@ function FeaturedProduct() {
   return (
     <section className="py-16 sm:py-20" aria-labelledby="featured-products">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <SectionHeading eyebrow="Featured products" title="Exclusive products & offers" />
+        <SectionHeading id="featured-products" eyebrow="Featured products" title="Exclusive products & offers" />
         <div className="mt-12 flex justify-center">
           <Card className="w-full max-w-sm text-center">
             <CardContent className="flex flex-col items-center gap-3 pt-6">

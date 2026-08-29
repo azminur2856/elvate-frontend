@@ -65,22 +65,24 @@ function Footer() {
           </ul>
         </div>
 
-        <address className="text-sm not-italic leading-relaxed">
+        <div>
           <h2 className="mb-4 text-lg font-semibold text-foreground">Contact us</h2>
-          <p>Ka-96/1, Kazi Bari, Kuril Bisho Road, Dhaka, Bangladesh</p>
-          <p className="mt-2">
-            Email:{" "}
-            <a href="mailto:support@elvate.com" className="text-link hover:underline">
-              support@elvate.com
-            </a>
-          </p>
-          <p>
-            Phone:{" "}
-            <a href="tel:+8801234567890" className="hover:text-foreground">
-              +880 1234-567890
-            </a>
-          </p>
-        </address>
+          <address className="text-sm not-italic leading-relaxed">
+            <p>Ka-96/1, Kazi Bari, Kuril Bisho Road, Dhaka, Bangladesh</p>
+            <p className="mt-2">
+              Email:{" "}
+              <a href="mailto:support@elvate.com" className="text-link hover:underline">
+                support@elvate.com
+              </a>
+            </p>
+            <p>
+              Phone:{" "}
+              <a href="tel:+8801234567890" className="hover:text-foreground">
+                +880 1234-567890
+              </a>
+            </p>
+          </address>
+        </div>
       </div>
       <p className="border-t border-border px-4 py-6 text-center text-sm">
         © {new Date().getFullYear()} Elvate. All rights reserved.

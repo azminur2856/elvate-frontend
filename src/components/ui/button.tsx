@@ -56,6 +56,17 @@ function Button({
   }) {
   const Comp = asChild ? Slot.Root : "button"
 
+  // Radix Slot requires exactly ONE child element, so the spinner is only
+  // injected when rendering a real <button>.
+  const content = asChild ? (
+    children
+  ) : (
+    <>
+      {loading ? <Loader2 aria-hidden="true" className="animate-spin" /> : null}
+      {children}
+    </>
+  )
+
   return (
     <Comp
       data-slot="button"
@@ -63,11 +74,10 @@ function Button({
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
       aria-busy={loading || undefined}
-      disabled={disabled || loading}
+      disabled={asChild ? disabled : disabled || loading}
       {...props}
     >
-      {loading ? <Loader2 aria-hidden="true" className="animate-spin" /> : null}
-      {children}
+      {content}
     </Comp>
   )
 }

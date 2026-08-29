@@ -20,6 +20,7 @@ function FeaturedDigitalServices() {
     <section className="bg-muted/40 py-16 sm:py-20" aria-labelledby="featured-services">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <SectionHeading
+          id="featured-services"
           eyebrow="Featured digital services"
           title="Boost your productivity with AI tools"
         />

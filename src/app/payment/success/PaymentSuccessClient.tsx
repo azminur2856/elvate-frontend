@@ -44,7 +44,7 @@ export default function PaymentSuccessClient() {
 
   if (loading) {
     return (
-      <PageShell width="sm" center>
+      <PageShell width="sm" title={<span className="sr-only">Checking your payment</span>} center>
         <Skeleton className="h-72 w-full" />
       </PageShell>
     );
@@ -52,7 +52,7 @@ export default function PaymentSuccessClient() {
 
   if (error || !session) {
     return (
-      <PageShell width="sm" center>
+      <PageShell width="sm" title="Payment status" center>
         <div className="grid w-full gap-4">
           <FormMessage variant="error">{error || "Payment details not found."}</FormMessage>
           <Button asChild variant="outline">

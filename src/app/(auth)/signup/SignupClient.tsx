@@ -194,8 +194,10 @@ export default function SignupClient() {
               onCheckedChange={(v) => set("terms", v === true)}
               aria-required
             />
-            <Label htmlFor="terms" className="font-normal leading-snug">
-              I agree to the{" "}
+            <p className="text-sm leading-snug">
+              <Label htmlFor="terms" className="inline font-normal">
+                I agree to the
+              </Label>{" "}
               <Link
                 href="/terms"
                 target="_blank"
@@ -203,8 +205,9 @@ export default function SignupClient() {
                 className="text-link hover:underline"
               >
                 Terms &amp; Conditions
+                <span className="sr-only"> (opens in a new tab)</span>
               </Link>
-            </Label>
+            </p>
           </div>
 
           <Button

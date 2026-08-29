@@ -24,7 +24,7 @@ export function StatCard({ label, value, hint, accent = 1, className }: StatCard
       <CardContent className="px-5">
         <p className="text-sm text-muted-foreground">{label}</p>
         <p className="mt-1 font-heading text-3xl font-bold tabular-nums">{value}</p>
-        {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
+        {hint ? <p className="mt-1 text-sm text-muted-foreground">{hint}</p> : null}
       </CardContent>
     </Card>
   );

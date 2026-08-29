@@ -38,7 +38,7 @@ function WhyChooseUs() {
   return (
     <section className="bg-muted/40 py-16 sm:py-20" aria-labelledby="why-elvate">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <SectionHeading eyebrow="Why Elvate" title="Everything you need, in one place" className="mb-12" />
+        <SectionHeading id="why-elvate" eyebrow="Why Elvate" title="Everything you need, in one place" className="mb-12" />
         <StickyScroll content={content} />
       </div>
     </section>

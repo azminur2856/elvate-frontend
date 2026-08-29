@@ -48,7 +48,7 @@ function Testimonials() {
         className="absolute inset-0 -z-10 bg-grid [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
       />
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <SectionHeading eyebrow="Testimonials" title="What people say about Elvate" className="mb-10" />
+        <SectionHeading id="testimonials" eyebrow="Testimonials" title="What people say about Elvate" className="mb-10" />
         <InfiniteMovingCards items={testimonials} direction="right" speed="slow" />
       </div>
     </section>

@@ -99,8 +99,8 @@ export function MobileNav({
 
           {session ? (
             <div>
-              <p className="px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {session.user.name}
+              <p className="px-3 text-sm text-muted-foreground">
+                Signed in as <span className="font-medium text-foreground">{session.user.name}</span>
               </p>
               <ul className="mt-1">
                 {getUserMenuItems(isAdmin).map((item) => (

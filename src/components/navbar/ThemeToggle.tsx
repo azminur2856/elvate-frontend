@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
-import { Check, Monitor, Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
@@ -48,20 +49,14 @@ export function ThemeToggle({ className }: { className?: string }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {options.map(({ value, label, icon: Icon }) => (
-          <DropdownMenuItem
-            key={value}
-            onSelect={() => setTheme(value)}
-            aria-checked={theme === value}
-            role="menuitemradio"
-          >
-            <Icon aria-hidden="true" />
-            {label}
-            {theme === value ? (
-              <Check aria-hidden="true" className="ml-auto" />
-            ) : null}
-          </DropdownMenuItem>
-        ))}
+        <DropdownMenuRadioGroup value={theme ?? "system"} onValueChange={setTheme}>
+          {options.map(({ value, label, icon: Icon }) => (
+            <DropdownMenuRadioItem key={value} value={value}>
+              <Icon aria-hidden="true" />
+              {label}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

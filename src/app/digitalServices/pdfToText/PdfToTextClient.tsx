@@ -48,12 +48,19 @@ export default function PdfToTextClient() {
       input={
         tool.file && tool.preview ? (
           <div className="flex flex-1 flex-col items-center">
-            <embed
+            <iframe
               src={tool.preview}
-              type="application/pdf"
               title={`Preview of ${tool.file.name}`}
               className="h-80 w-full flex-1 rounded-lg border border-border bg-muted"
             />
+            <a
+              href={tool.preview}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 text-sm text-link hover:underline"
+            >
+              Open the PDF in a new tab
+            </a>
             <FileSummary
               file={tool.file}
               onRemove={() => {

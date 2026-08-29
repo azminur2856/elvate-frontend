@@ -218,38 +218,37 @@ export default function ImageResizeClient() {
         />
       }
       output={
-        resizedUrl ? (
-          <div className="flex flex-1 flex-col items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={resizedUrl}
-              alt={`Resized to ${width} by ${height} pixels`}
-              className="max-h-80 max-w-full rounded-lg border border-border bg-muted object-contain"
-            />
-            <p className="text-sm text-muted-foreground">
-              {width} × {height} px
-            </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              <Button asChild>
-                <a href={resizedUrl} download="resized.jpg">
-                  <Download aria-hidden="true" />
-                  Download
-                </a>
-              </Button>
-              <Button variant="outline" onClick={reset}>
-                <RefreshCw aria-hidden="true" />
-                Resize another
-              </Button>
+        <div aria-live="polite" className="flex flex-1 flex-col">
+          {resizedUrl ? (
+            <div className="flex flex-1 flex-col items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={resizedUrl}
+                alt={`Resized to ${width} by ${height} pixels`}
+                className="max-h-80 max-w-full rounded-lg border border-border bg-muted object-contain"
+              />
+              <p className="text-sm text-muted-foreground">
+                {width} × {height} px
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button asChild>
+                  <a href={resizedUrl} download="resized.jpg">
+                    <Download aria-hidden="true" />
+                    Download
+                  </a>
+                </Button>
+                <Button variant="outline" onClick={reset}>
+                  <RefreshCw aria-hidden="true" />
+                  Resize another
+                </Button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <p
-            className="flex flex-1 items-center justify-center text-center text-muted-foreground"
-            aria-live="polite"
-          >
-            {tool.busy ? "Resizing…" : "The resized image will appear here."}
-          </p>
-        )
+          ) : (
+            <p className="flex flex-1 items-center justify-center text-center text-muted-foreground">
+              {tool.busy ? "Resizing…" : "The resized image will appear here."}
+            </p>
+          )}
+        </div>
       }
     >
       <SubscriptionRequiredModal

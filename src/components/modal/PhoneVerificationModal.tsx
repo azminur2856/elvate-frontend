@@ -104,10 +104,11 @@ export default function PhoneVerificationModal({
           <form onSubmit={verifyOtp} className="grid gap-4">
             {info ? <FormMessage variant="success">{info}</FormMessage> : null}
             <div className="grid gap-2">
-              <Label htmlFor="otp-0" className="justify-center">
+              <Label htmlFor="otp" className="justify-center">
                 Enter the 6-digit code
               </Label>
               <InputOTP
+                id="otp"
                 maxLength={6}
                 value={otp}
                 onChange={setOtp}
