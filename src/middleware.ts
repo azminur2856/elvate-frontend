@@ -52,7 +52,8 @@ export const config = {
     "/signup",
     // Protected user routes
     "/profile",
-    "/dashboard",
+    "/activity",
+    "/settings",
     "/subscription/:path*",
     "/activate/:path*",
     "/payment/:path*",

@@ -1,167 +1,150 @@
 "use client";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import api from "@/lib/authAxios";
+import { getErrorMessage } from "@/lib/errors";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import toast from "react-hot-toast";
-import api from "@/lib/authAxios";
+import { FormMessage } from "@/components/forms/FormMessage";
+
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  phone: string;
+  /** Called after a successful verification. */
+  onVerified?: () => void;
+};
 
 export default function PhoneVerificationModal({
   open,
   onClose,
   phone,
   onVerified,
-}: {
-  open: boolean;
-  onClose: () => void;
-  phone: string;
-  onVerified?: () => void; // callback after successful verify
-}) {
-  const [otpStep, setOtpStep] = useState<"request" | "verify">("request");
+}: Props) {
+  const [step, setStep] = useState<"request" | "verify">("request");
   const [otp, setOtp] = useState("");
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [otpMsg, setOtpMsg] = useState<string | null>(null);
-  const [otpError, setOtpError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [info, setInfo] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
-  // Reset state when modal closes
-  if (!open) {
-    if (otpStep !== "request" || otp || otpMsg || otpError)
-      setTimeout(() => {
-        setOtpStep("request");
-        setOtp("");
-        setOtpMsg(null);
-        setOtpError("");
-      }, 250);
-    return null;
-  }
+  // Reset when the dialog closes (previously done inside render via setTimeout).
+  useEffect(() => {
+    if (!open) {
+      setStep("request");
+      setOtp("");
+      setInfo(null);
+      setError("");
+      setLoading(false);
+    }
+  }, [open]);
+
+  const requestOtp = async () => {
+    setLoading(true);
+    setInfo(null);
+    setError("");
+    try {
+      const res = await api.post("/auth/getOtpForPhoneVerification");
+      setInfo(res.data?.message ?? "OTP sent.");
+      setStep("verify");
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to send OTP."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const res = await api.post("/auth/verifyPhone", { otp });
+      toast.success(res.data?.message || "Phone verified.");
+      onVerified?.();
+      onClose();
+    } catch (err) {
+      setError(getErrorMessage(err, "Invalid or expired OTP."));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-      <div className="bg-neutral-900 border border-neutral-800 p-7 rounded-2xl w-full max-w-sm relative">
-        <button
-          className="absolute top-2 right-4 text-2xl text-gray-400 hover:text-gray-100"
-          onClick={onClose}
-          aria-label="Close"
-        >
-          &times;
-        </button>
-        <h3 className="text-xl font-bold mb-3 text-center text-white">
-          Phone Verification
-        </h3>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Phone verification</DialogTitle>
+          <DialogDescription>
+            We&apos;ll send a 6-digit code to{" "}
+            <span className="font-mono tabular-nums text-foreground">{phone}</span>.
+          </DialogDescription>
+        </DialogHeader>
 
-        {otpStep === "request" ? (
-          <>
-            <p className="text-gray-300 mb-4 text-center">
-              We’ll send a 6-digit OTP to your phone.
-              <br />
-              <span className="font-mono text-blue-400 text-sm">{phone}</span>
-            </p>
-            <button
-              onClick={async () => {
-                setOtpLoading(true);
-                setOtpMsg(null);
-                setOtpError("");
-                try {
-                  const res = await api.post(
-                    "/auth/getOtpForPhoneVerification"
-                  );
-                  setOtpMsg(res.data.message);
-                  setOtpStep("verify");
-                  toast.success("OTP sent!");
-                } catch (err: any) {
-                  setOtpError(
-                    err?.response?.data?.message ||
-                      err?.response?.data?.error ||
-                      err?.message ||
-                      "Failed to send OTP"
-                  );
-                  toast.error("Failed to send OTP");
-                } finally {
-                  setOtpLoading(false);
-                }
-              }}
-              className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition disabled:bg-gray-700"
-              disabled={otpLoading}
-            >
-              {otpLoading ? "Sending..." : "Send OTP"}
-            </button>
-            {otpMsg && (
-              <div className="mt-2 text-green-400 text-sm text-center">
-                {otpMsg}
-              </div>
-            )}
-            {otpError && (
-              <div className="mt-2 text-red-400 text-sm text-center">
-                {otpError}
-              </div>
-            )}
-          </>
+        {step === "request" ? (
+          <div className="grid gap-3">
+            {error ? <FormMessage variant="error">{error}</FormMessage> : null}
+            <Button className="w-full" loading={loading} onClick={requestOtp}>
+              Send code
+            </Button>
+          </div>
         ) : (
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setOtpLoading(true);
-              setOtpError("");
-              try {
-                const res = await api.post("/auth/verifyPhone", { otp });
-                toast.success(res.data.message || "Phone verified!");
-                setOtp("");
-                setOtpMsg(null);
-                setOtpError("");
-                setTimeout(() => {
-                  if (onVerified) onVerified();
-                  onClose();
-                }, 600);
-              } catch (err: any) {
-                setOtpError(
-                  err?.response?.data?.message ||
-                    err?.response?.data?.error ||
-                    err?.message ||
-                    "Invalid OTP"
-                );
-                toast.error("Invalid or expired OTP");
-              } finally {
-                setOtpLoading(false);
-              }
-            }}
-            className="flex flex-col gap-4 mt-3"
-          >
-            <label className="block text-gray-200 text-sm font-medium mb-2 text-center">
-              Enter 6-digit OTP sent to your phone
-            </label>
-            <InputOTP
-              maxLength={6}
-              value={otp}
-              onChange={setOtp}
-              containerClassName="justify-center"
-              className="border border-neutral-700 rounded-md bg-neutral-800 text-white"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoFocus
-            >
-              <InputOTPGroup>
-                {[...Array(6)].map((_, idx) => (
-                  <InputOTPSlot key={idx} index={idx} />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
-            {otpError && (
-              <span className="text-xs text-red-400 mt-1 text-center">
-                {otpError}
-              </span>
-            )}
-            <button
+          <form onSubmit={verifyOtp} className="grid gap-4">
+            {info ? <FormMessage variant="success">{info}</FormMessage> : null}
+            <div className="grid gap-2">
+              <Label htmlFor="otp-0" className="justify-center">
+                Enter the 6-digit code
+              </Label>
+              <InputOTP
+                maxLength={6}
+                value={otp}
+                onChange={setOtp}
+                containerClassName="justify-center"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoFocus
+                aria-label="One-time code"
+              >
+                <InputOTPGroup>
+                  {[0, 1, 2, 3, 4, 5].map((idx) => (
+                    <InputOTPSlot key={idx} index={idx} />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            {error ? <FormMessage variant="error">{error}</FormMessage> : null}
+            <Button
               type="submit"
-              className="w-full bg-green-600 text-white py-2 rounded-md font-semibold hover:bg-green-700 transition disabled:bg-gray-600"
-              disabled={otp.length !== 6 || otpLoading}
+              className="w-full"
+              loading={loading}
+              disabled={otp.length !== 6}
             >
-              {otpLoading ? "Verifying..." : "Verify"}
-            </button>
+              Verify
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={requestOtp}
+              disabled={loading}
+            >
+              Resend code
+            </Button>
           </form>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

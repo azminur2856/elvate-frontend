@@ -1,7 +1,20 @@
 "use client";
-import React, { useState } from "react";
-import api from "@/lib/authAxios";
+
+import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import api from "@/lib/authAxios";
+import { getErrorMessage } from "@/lib/errors";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { FormField } from "@/components/forms/FormField";
+import { FormMessage } from "@/components/forms/FormMessage";
 
 export type UpdateUserData = {
   firstName?: string;
@@ -24,12 +37,13 @@ export default function UpdateUserModal({
 }: Props) {
   const [form, setForm] = useState<UpdateUserData>(user);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
 
-  // Keep form fields in sync when modal reopens
-  // (e.g., user updates and reopens modal)
-  React.useEffect(() => {
-    if (open) setForm(user);
+  useEffect(() => {
+    if (open) {
+      setForm(user);
+      setError("");
+    }
   }, [open, user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,96 +59,65 @@ export default function UpdateUserModal({
         ...form,
         phone: form.phone ? form.phone : undefined,
       });
-      setLoading(false);
-      toast.success("Profile updated successfully!");
+      toast.success("Profile updated.");
       onSuccess();
       onClose();
-    } catch (err: any) {
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to update profile."));
+    } finally {
       setLoading(false);
-      //   setError(
-      //     err?.response?.data?.message ||
-      //       err?.response?.data?.error ||
-      //       err?.message ||
-      //       "Failed to update profile."
-      //   );
-      const msg =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        err?.message ||
-        "Failed to update profile.";
-      setError(msg);
-      toast.error(msg);
     }
   };
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center">
-      <div className="bg-neutral-900 p-8 rounded-xl border border-neutral-700 w-full max-w-sm shadow-lg relative animate-fade-in">
-        <button
-          className="absolute top-3 right-5 text-2xl text-gray-400 hover:text-gray-100"
-          onClick={onClose}
-        >
-          &times;
-        </button>
-        <h3 className="text-xl font-bold mb-4 text-white text-center">
-          Update Profile
-        </h3>
-        <form onSubmit={handleSave} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1">
-              First Name
-            </label>
-            <input
-              type="text"
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Update profile</DialogTitle>
+          <DialogDescription>Change your name or phone number.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSave} className="grid gap-4">
+          <FormField id="firstName" label="First name" required>
+            <Input
               name="firstName"
+              autoComplete="given-name"
               value={form.firstName || ""}
               onChange={handleChange}
-              className="block w-full border border-neutral-700 bg-neutral-800 text-white rounded-md px-3 py-2 focus:ring focus:ring-blue-500 focus:outline-none"
               required
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1">
-              Last Name
-            </label>
-            <input
-              type="text"
+          </FormField>
+          <FormField id="lastName" label="Last name">
+            <Input
               name="lastName"
+              autoComplete="family-name"
               value={form.lastName || ""}
               onChange={handleChange}
-              className="block w-full border border-neutral-700 bg-neutral-800 text-white rounded-md px-3 py-2 focus:ring focus:ring-blue-500 focus:outline-none"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1">
-              Phone
-            </label>
-            <input
-              type="text"
+          </FormField>
+          <FormField
+            id="phone"
+            label="Phone"
+            hint="Bangladeshi number, e.g. 01712345678"
+          >
+            <Input
               name="phone"
+              type="tel"
+              inputMode="numeric"
+              autoComplete="tel-national"
               value={form.phone || ""}
               onChange={handleChange}
               placeholder="01XXXXXXXXX"
-              className="block w-full border border-neutral-700 bg-neutral-800 text-white rounded-md px-3 py-2 focus:ring focus:ring-blue-500 focus:outline-none"
               pattern="^01[3-9]\d{8}$"
               maxLength={11}
               title="Must be a valid Bangladeshi phone number"
             />
-          </div>
-          {error && (
-            <div className="text-red-400 text-sm text-center">{error}</div>
-          )}
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition"
-            disabled={loading}
-          >
-            {loading ? "Saving..." : "Save"}
-          </button>
+          </FormField>
+          {error ? <FormMessage variant="error">{error}</FormMessage> : null}
+          <Button type="submit" className="w-full" loading={loading}>
+            Save
+          </Button>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -1,8 +1,19 @@
 "use client";
-import api from "@/lib/authAxios";
-import { resizeImage } from "@/lib/resizeImage";
-import { useRef, useState } from "react";
+
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
+import { Camera, Upload } from "lucide-react";
+import api from "@/lib/authAxios";
+import { getErrorMessage } from "@/lib/errors";
+import { resizeImage } from "@/lib/resizeImage";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   open: boolean;
@@ -10,11 +21,9 @@ type Props = {
   onSuccess?: () => void;
 };
 
-export default function ProfileImageUploadModal({
-  open,
-  onClose,
-  onSuccess,
-}: Props) {
+const MAX_BYTES = 5 * 1024 * 1024;
+
+export default function ProfileImageUploadModal({ open, onClose, onSuccess }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,95 +33,86 @@ export default function ProfileImageUploadModal({
   const [imgFile, setImgFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Start camera
-  const handleStartCamera = async () => {
-    setStep("camera");
+  const stopCamera = useCallback(() => {
+    const video = videoRef.current;
+    if (video?.srcObject) {
+      (video.srcObject as MediaStream).getTracks().forEach((t) => t.stop());
+      video.srcObject = null;
+    }
+  }, []);
+
+  const reset = useCallback(() => {
+    stopCamera();
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
     setImgFile(null);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      }
-    } catch {
-      toast.error("Could not access camera");
-      setStep("choose");
-    }
-  };
+    setStep("choose");
+  }, [previewUrl, stopCamera]);
 
-  // Capture photo from video
-  const handleCapture = async () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas
-        .getContext("2d")
-        ?.drawImage(video, 0, 0, canvas.width, canvas.height);
+  // Always release the camera + object URL when the dialog closes.
+  useEffect(() => {
+    if (!open) reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
-      // Get the raw captured image as a Blob
-      canvas.toBlob(async (blob) => {
-        if (blob) {
-          // Resize/compress the captured image
-          const tempFile = new File([blob], "photo.jpg", {
-            type: "image/jpeg",
-          });
-          const resizedBlob = await resizeImage(tempFile, 512, 512, 0.8);
-
-          if (!resizedBlob) {
-            toast.error("Failed to process captured image.");
-            return;
-          }
-          if (resizedBlob.size > 5 * 1024 * 1024) {
-            toast.error("Image is too large after resizing. Try again.");
-            return;
-          }
-
-          const file = new File([resizedBlob], "photo.jpg", {
-            type: "image/jpeg",
-          });
-          setImgFile(file);
-          setPreviewUrl(URL.createObjectURL(resizedBlob));
-          setStep("preview");
-        }
-      }, "image/jpeg");
-    }
-    // Stop camera stream
-    if (videoRef.current && videoRef.current.srcObject) {
-      (videoRef.current.srcObject as MediaStream)
-        .getTracks()
-        .forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
-    }
-  };
-
-  // Handle file select/upload
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.match(/image\/(jpg|jpeg|png|gif)/)) {
-      toast.error("Only image files allowed.");
-      return;
-    }
-    // Resize/compress here
-    const blob = await resizeImage(file, 512, 512, 0.8);
+  const acceptProcessed = async (source: File | Blob, name: string) => {
+    const blob = await resizeImage(
+      source instanceof File ? source : new File([source], name, { type: "image/jpeg" }),
+      512,
+      512,
+      0.8
+    );
     if (!blob) {
-      toast.error("Failed to process image.");
+      toast.error("Failed to process the image.");
       return;
     }
-    if (blob.size > 5 * 1024 * 1024) {
-      toast.error("Image too large after resize. Try a smaller image.");
+    if (blob.size > MAX_BYTES) {
+      toast.error("Image is still too large after resizing. Try a smaller one.");
       return;
     }
-    const newFile = new File([blob], file.name, { type: blob.type });
-    setImgFile(newFile);
+    setImgFile(new File([blob], name, { type: blob.type || "image/jpeg" }));
     setPreviewUrl(URL.createObjectURL(blob));
     setStep("preview");
   };
 
-  // Upload profile image
+  const handleStartCamera = async () => {
+    setStep("camera");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+    } catch {
+      toast.error("Could not access the camera.");
+      setStep("choose");
+    }
+  };
+
+  const handleCapture = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      if (blob) void acceptProcessed(blob, "photo.jpg");
+    }, "image/jpeg");
+    stopCamera();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!/^image\/(jpe?g|png|gif|webp)$/.test(file.type)) {
+      toast.error("Only JPG, PNG, GIF or WebP images are allowed.");
+      return;
+    }
+    await acceptProcessed(file, file.name);
+  };
+
   const handleUpload = async () => {
     if (!imgFile) return;
     setLoading(true);
@@ -122,144 +122,88 @@ export default function ProfileImageUploadModal({
       await api.patch("/users/updateProfileImage", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      toast.success("Profile image updated!");
+      toast.success("Profile photo updated.");
       onSuccess?.();
       onClose();
-    } catch (err: any) {
-      toast.error(
-        err?.response?.data?.message ||
-          err?.response?.data?.error ||
-          err.message ||
-          "Failed to update profile image"
-      );
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to update profile photo."));
     } finally {
       setLoading(false);
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
     }
   };
-
-  // Reset on close
-  const handleClose = () => {
-    setPreviewUrl(null);
-    setImgFile(null);
-    setStep("choose");
-    if (videoRef.current && videoRef.current.srcObject) {
-      (videoRef.current.srcObject as MediaStream)
-        .getTracks()
-        .forEach((track) => track.stop());
-      videoRef.current.srcObject = null;
-    }
-    onClose();
-  };
-
-  if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-neutral-900 text-white p-6 rounded-2xl shadow-2xl max-w-sm w-full relative border border-neutral-800">
-        <button
-          className="absolute right-3 top-2 text-2xl text-gray-400 hover:text-white"
-          onClick={handleClose}
-          aria-label="Close"
-        >
-          &times;
-        </button>
-        <h3 className="text-xl font-bold mb-4 text-center">
-          Update Profile Picture
-        </h3>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Update profile photo</DialogTitle>
+          <DialogDescription>
+            Upload an image or take a photo. It will be resized to 512×512.
+          </DialogDescription>
+        </DialogHeader>
 
-        {step === "choose" && (
-          <div className="flex flex-col items-center gap-4">
-            <button
-              className="w-full bg-blue-600 py-2 rounded-md font-semibold hover:bg-blue-700 transition"
-              onClick={() => fileInputRef.current?.click()}
-            >
+        {step === "choose" ? (
+          <div className="grid gap-3">
+            <Button onClick={() => fileInputRef.current?.click()}>
+              <Upload aria-hidden="true" />
               Upload from device
-            </button>
+            </Button>
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
-              className="hidden"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              className="sr-only"
+              aria-label="Choose an image file"
               onChange={handleFileChange}
             />
-            <span className="text-gray-400">or</span>
-            <button
-              className="w-full bg-green-600 py-2 rounded-md font-semibold hover:bg-green-700 transition"
-              onClick={handleStartCamera}
-            >
+            <p className="text-center text-sm text-muted-foreground">or</p>
+            <Button variant="secondary" onClick={handleStartCamera}>
+              <Camera aria-hidden="true" />
               Take a photo
-            </button>
+            </Button>
           </div>
-        )}
+        ) : null}
 
-        {step === "camera" && (
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative w-48 h-48 bg-black rounded-lg overflow-hidden mb-2">
+        {step === "camera" ? (
+          <div className="grid gap-3">
+            <div className="mx-auto aspect-square w-48 overflow-hidden rounded-lg bg-muted">
               <video
                 ref={videoRef}
-                className="w-full h-full object-cover"
+                className="size-full object-cover"
                 autoPlay
                 playsInline
                 muted
+                aria-label="Live camera preview"
               />
             </div>
             <canvas ref={canvasRef} className="hidden" />
-            <button
-              className="w-full bg-blue-600 py-2 rounded-md font-semibold hover:bg-blue-700 transition"
-              onClick={handleCapture}
-            >
-              Capture Photo
-            </button>
-            <button
-              className="w-full bg-gray-700 py-2 rounded-md font-semibold hover:bg-gray-800 transition"
-              onClick={() => {
-                // Stop camera
-                if (videoRef.current && videoRef.current.srcObject) {
-                  (videoRef.current.srcObject as MediaStream)
-                    .getTracks()
-                    .forEach((track) => track.stop());
-                  videoRef.current.srcObject = null;
-                }
-                setStep("choose");
-              }}
-            >
+            <Button onClick={handleCapture}>Capture photo</Button>
+            <Button variant="outline" onClick={reset}>
               Cancel
-            </button>
+            </Button>
           </div>
-        )}
+        ) : null}
 
-        {step === "preview" && previewUrl && (
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-48 h-48 rounded-full overflow-hidden border-2 border-blue-700 shadow-lg mb-2">
+        {step === "preview" && previewUrl ? (
+          <div className="grid gap-3">
+            <div className="mx-auto size-48 overflow-hidden rounded-full border-2 border-primary shadow-lg">
+              {/* Object URL preview — next/image adds nothing for blob: sources */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
-                alt="Preview"
-                className="w-full h-full object-cover"
+                alt="Preview of your new profile photo"
+                className="size-full object-cover"
               />
             </div>
-            <button
-              className="w-full bg-blue-600 py-2 rounded-md font-semibold hover:bg-blue-700 transition"
-              onClick={handleUpload}
-              disabled={loading}
-            >
-              {loading ? "Uploading..." : "Save"}
-            </button>
-            <button
-              className="w-full bg-gray-700 py-2 rounded-md font-semibold hover:bg-gray-800 transition"
-              onClick={() => {
-                setStep("choose");
-                if (previewUrl) URL.revokeObjectURL(previewUrl);
-                setPreviewUrl(null);
-                setImgFile(null);
-              }}
-            >
+            <Button onClick={handleUpload} loading={loading}>
+              Save photo
+            </Button>
+            <Button variant="outline" onClick={reset} disabled={loading}>
               Choose another
-            </button>
+            </Button>
           </div>
-        )}
-      </div>
-    </div>
+        ) : null}
+      </DialogContent>
+    </Dialog>
   );
 }

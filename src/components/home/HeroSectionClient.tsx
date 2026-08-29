@@ -1,6 +1,6 @@
 // components/home/HeroSection.tsx
 import Link from "next/link";
-import { Button } from "../ui/moving-border";
+import { MovingBorderButton } from "../ui/moving-border";
 import { Spotlight } from "../ui/spotlight-new";
 import { Role } from "@/lib/enums/role.enum"; // adjust import as needed
 
@@ -49,20 +49,20 @@ function HeroSectionClient({ user }: HeroSectionProps) {
         </p>
         <div className="mt-6 flex flex-col md:flex-row items-center justify-center gap-4">
           <Link href="/digitalServices">
-            <Button
+            <MovingBorderButton
               borderRadius="1.75rem"
               className="bg-white dark:bg-black text-black dark:text-white border-neutral-200 dark:border-slate-800"
             >
               Explore Digital Services
-            </Button>
+            </MovingBorderButton>
           </Link>
           <Link href="/shop">
-            <Button
+            <MovingBorderButton
               borderRadius="1.75rem"
               className="bg-white dark:bg-black text-black dark:text-white border-neutral-200 dark:border-slate-800"
             >
               Shop Products
-            </Button>
+            </MovingBorderButton>
           </Link>
         </div>
       </div>

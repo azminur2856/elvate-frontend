@@ -10,7 +10,11 @@ import {
 import { useRef } from "react";
 import { cn } from "@/lib/utils";
 
-export function Button({
+/**
+ * Decorative animated-border call-to-action (Aceternity). Renamed from
+ * `Button` so it never collides with the shadcn `Button` primitive.
+ */
+export function MovingBorderButton({
   borderRadius = "1.75rem",
   children,
   as: Component = "button",

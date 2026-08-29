@@ -3,7 +3,12 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   eslint: {
-    ignoreDuringBuilds: true, // Ignore during build
+    ignoreDuringBuilds: true, // TODO(phase 8): set to false once lint is clean
+  },
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "ik.imagekit.io", pathname: "/**" },
+    ],
   },
   // Proxy every backend call through this app's own origin so the backend's
   // `session` cookie is stored first-party (under this domain) and is visible to
