@@ -7,24 +7,55 @@ const api = axios.create({
   withCredentials: true, // Send cookies with requests
 });
 
+const REFRESH_URL = "/auth/refresh";
+
+// One in-flight refresh shared by every 401 that arrives while it runs.
+// The backend ROTATES the refresh token on each call, so two concurrent
+// refreshes would race: the second one presents an already-replaced token,
+// gets 401, and logs the user out for no reason.
+let refreshInFlight: Promise<void> | null = null;
+
+function refreshSession(): Promise<void> {
+  if (!refreshInFlight) {
+    refreshInFlight = api
+      .post(REFRESH_URL, {})
+      .then(() => undefined)
+      .finally(() => {
+        refreshInFlight = null;
+      });
+  }
+  return refreshInFlight;
+}
+
 // Response interceptor to handle 401 and refresh logic
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error) => {
     const originalRequest = error.config;
+    const isRefreshCall = (originalRequest?.url ?? "").includes(REFRESH_URL);
 
-    // Only run if 401 and not already trying to refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Only run if 401, not already retried, and not the refresh call itself
+    // (a 401 from /auth/refresh must never trigger another refresh — that
+    // was an infinite loop).
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !isRefreshCall
+    ) {
       originalRequest._retry = true; // Custom flag to avoid infinite loop
 
       try {
-        // Attempt token refresh
-        await api.post("/auth/refresh", {});
-        // Retry the original request (cookie should be renewed)
+        await refreshSession();
+        // Retry the original request (cookie has been renewed)
         return api(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, redirect to login
-        if (typeof window !== "undefined") {
+        // Refresh failed: the backend has cleared the session cookie, so the
+        // middleware will now let /login render instead of bouncing to "/".
+        if (
+          typeof window !== "undefined" &&
+          !window.location.pathname.startsWith("/login")
+        ) {
           window.location.href = "/login";
         }
         return Promise.reject(refreshError);
