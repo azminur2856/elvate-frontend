@@ -72,7 +72,7 @@ api.interceptors.response.use(
  * Example:
  *   const data = await authAxios("/users/profile", { method: "get" });
  */
-export async function authAxios<T = any>(
+export async function authAxios<T = unknown>(
   url: string,
   config: AxiosRequestConfig = {}
 ): Promise<T> {

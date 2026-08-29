@@ -34,7 +34,6 @@ export default function FaceVerificationModal({ open, onClose, onVerified }: Pro
   // Start camera + load face-api models while open; stop everything on close.
   useEffect(() => {
     if (!open) return;
-    let interval: ReturnType<typeof setInterval> | undefined;
     let localStream: MediaStream | undefined;
     let cancelled = false;
 
@@ -92,11 +91,11 @@ export default function FaceVerificationModal({ open, onClose, onVerified }: Pro
       void loadModels();
     }
     void startCamera();
-    interval = setInterval(() => void detectFaceStatus(), 500);
+    const interval = setInterval(() => void detectFaceStatus(), 500);
 
     return () => {
       cancelled = true;
-      if (interval) clearInterval(interval);
+      clearInterval(interval);
       localStream?.getTracks().forEach((track) => track.stop());
     };
   }, [open]);

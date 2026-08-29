@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   eslint: {
-    ignoreDuringBuilds: true, // TODO(phase 8): set to false once lint is clean
+    ignoreDuringBuilds: false,
   },
   images: {
     remotePatterns: [
