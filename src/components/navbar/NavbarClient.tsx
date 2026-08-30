@@ -26,6 +26,9 @@ export default function NavbarClient({ className, session }: Props) {
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-50 h-[var(--navbar-h)] border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70",
+        // When a dialog locks page scroll, Radix pads <body> by the scrollbar
+        // width; mirror that here so the fixed header doesn't jump.
+        "pr-[var(--removed-body-scroll-bar-size,0px)]",
         className
       )}
     >

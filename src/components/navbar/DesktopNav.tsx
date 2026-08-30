@@ -46,7 +46,9 @@ export function DesktopNav({
   const pathname = usePathname();
 
   return (
-    <NavigationMenu className={className} aria-label="Primary">
+    // viewport={false}: each panel drops directly under its own trigger
+    // instead of into one shared viewport anchored to the menu's left edge.
+    <NavigationMenu className={className} aria-label="Primary" viewport={false}>
       <NavigationMenuList>
         {groups.map((group) => {
           const active = isActivePath(pathname, group.href);
@@ -79,9 +81,11 @@ export function DesktopNav({
               >
                 {group.label}
               </NavigationMenuTrigger>
-              <NavigationMenuContent>
+              <NavigationMenuContent
+                className={cn(group.sections && "md:left-auto md:right-0")}
+              >
                 {group.sections ? (
-                  <div className="grid w-[min(48rem,90vw)] grid-cols-3 gap-4 p-4">
+                  <div className="grid w-[min(42rem,calc(100vw-2rem))] grid-cols-3 gap-4 p-4">
                     {group.sections.map((section) => (
                       <div key={section.label}>
                         <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
