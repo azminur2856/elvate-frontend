@@ -23,6 +23,7 @@ type Props = {
 
 export default function FaceVerificationModal({ open, onClose, onVerified }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const verifyRef = useRef<HTMLButtonElement>(null);
   const { status, cameraError } = useFaceAlignment(videoRef, open);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
@@ -64,7 +65,13 @@ export default function FaceVerificationModal({ open, onClose, onVerified }: Pro
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent
+        className="sm:max-w-sm"
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          verifyRef.current?.focus();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Face verification</DialogTitle>
           <DialogDescription>
@@ -93,13 +100,19 @@ export default function FaceVerificationModal({ open, onClose, onVerified }: Pro
           <FormMessage variant={result.ok ? "success" : "error"}>{result.text}</FormMessage>
         ) : null}
         <Button
+          ref={verifyRef}
           className="w-full"
           onClick={handleVerify}
           loading={loading}
-          disabled={status !== "aligned"}
+          disabled={cameraError}
         >
           Verify face
         </Button>
+        {status !== "aligned" && !cameraError ? (
+          <p className="text-center text-xs text-muted-foreground">
+            Tip: verification works best when the indicator above is green.
+          </p>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

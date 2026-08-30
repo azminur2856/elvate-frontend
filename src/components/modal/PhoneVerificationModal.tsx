@@ -88,8 +88,9 @@ export default function PhoneVerificationModal({
         <DialogHeader>
           <DialogTitle>Phone verification</DialogTitle>
           <DialogDescription>
-            We&apos;ll send a 6-digit code to{" "}
-            <span className="font-mono tabular-nums text-foreground">{phone}</span>.
+            We&apos;ll send a 6-digit code by SMS to{" "}
+            <span className="font-medium tabular-nums text-foreground">{phone}</span>.
+            Codes expire after a few minutes.
           </DialogDescription>
         </DialogHeader>
 

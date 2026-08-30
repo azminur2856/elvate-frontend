@@ -9,7 +9,7 @@ import { formatDate } from "@/lib/format";
 import { PageShell } from "@/components/shared/PageShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -109,16 +109,19 @@ export default function SubscriptionPlansClient() {
                   <span className="ml-1 text-lg font-medium text-muted-foreground">৳</span>
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">{plan.desc}</p>
+              </CardContent>
+              <CardFooter>
                 <Button
                   size="lg"
-                  className="mt-auto w-full pt-2"
+                  className="w-full"
+                  variant={plan.highlight ? "default" : "outline"}
                   onClick={() => void startCheckout(plan.key)}
                   loading={checkout === plan.key}
                   disabled={checkout !== null}
                 >
-                  Subscribe
+                  {status?.isSubscribed ? "Extend with this plan" : "Subscribe"}
                 </Button>
-              </CardContent>
+              </CardFooter>
             </Card>
           </li>
         ))}
