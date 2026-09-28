@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ScanFace } from "lucide-react";
 import api from "@/lib/api";
@@ -14,11 +14,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
+const OAUTH_ERRORS: Record<string, string> = {
+  google: "Google sign-in failed. Please try again.",
+  google_inactive:
+    "This account is inactive or blocked by an admin. Contact support for help.",
+};
+
 export default function LoginClient() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // The backend redirects failed Google sign-ins here with ?error=<reason>.
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get("error");
+    if (reason) setError(OAUTH_ERRORS[reason] ?? OAUTH_ERRORS.google);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
