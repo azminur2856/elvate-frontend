@@ -1,18 +1,8 @@
 import type { Metadata } from "next";
-import { Tags } from "lucide-react";
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import CategoriesClient from "./CategoriesClient";
 
-export const metadata: Metadata = { title: "Product categories" };
+export const metadata: Metadata = { title: "Categories" };
 
-export default function AdminProductCategoriesPage() {
-  return (
-    <ComingSoon
-      title="Product categories"
-      description="Category management is under development."
-      icon={Tags}
-      badge="Under development"
-      backHref="/admin/dashboard"
-      backLabel="Back to dashboard"
-    />
-  );
+export default function AdminCategoriesPage() {
+  return <CategoriesClient />;
 }
