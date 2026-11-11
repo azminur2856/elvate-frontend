@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Tag } from "lucide-react";
 import { ComingSoon } from "@/components/shared/ComingSoon";
 
-export const metadata: Metadata = { title: "Sales & Offers" };
+export const metadata: Metadata = { title: "Offers" };
 
-export default function SalesAndOffersPage() {
+export default function OffersPage() {
   return (
     <ComingSoon
       title="Sales & offers"

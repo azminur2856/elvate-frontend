@@ -1,3 +1,5 @@
+import { Role } from "@/lib/enums/role.enum";
+
 export type NavLink = {
   label: string;
   href: string;
@@ -13,6 +15,9 @@ export type NavGroup = {
   /** Optional column headings for large groups (admin). */
   sections?: { label: string; items: NavLink[] }[];
 };
+
+/** The viewer's role, or null when logged out. */
+export type NavRole = Role | null | undefined;
 
 export const DIGITAL_SERVICE_LINKS: NavLink[] = [
   { label: "PDF to Text", href: "/digitalServices/pdfToText", description: "Extract text from PDF files" },
@@ -45,6 +50,9 @@ const ADMIN_SECTIONS: NavGroup["sections"] = [
       { label: "Categories", href: "/admin/products/categories" },
       { label: "Orders", href: "/admin/orders/view" },
       { label: "Order stats", href: "/admin/orders/stats" },
+      { label: "Coupons", href: "/admin/offers/coupons" },
+      { label: "Flash sales", href: "/admin/offers/flash-sales" },
+      { label: "Reviews", href: "/admin/reviews" },
     ],
   },
   {
@@ -60,31 +68,51 @@ const ADMIN_SECTIONS: NavGroup["sections"] = [
   },
 ];
 
-/** Primary navigation. Admins get everything a customer gets plus an Admin group. */
-export function getNavGroups(isAdmin: boolean): NavGroup[] {
+/**
+ * Primary navigation. Everyone gets the shop + services; delivery men get a
+ * Deliveries link; admins get the Admin group.
+ */
+export function getNavGroups(role: NavRole): NavGroup[] {
   const groups: NavGroup[] = [
     { label: "Home", href: "/" },
     { label: "Shop", href: "/shop", items: SHOP_LINKS },
-    { label: "Sales & Offers", href: "/sales&offer" },
+    { label: "Offers", href: "/offers" },
     { label: "Digital Services", href: "/digitalServices", items: DIGITAL_SERVICE_LINKS },
   ];
-  if (isAdmin) {
+  if (role === Role.DELIVERY_MAN) {
+    groups.push({ label: "Deliveries", href: "/delivery" });
+  }
+  if (role === Role.ADMIN) {
     groups.push({ label: "Admin", href: "/admin/dashboard", sections: ADMIN_SECTIONS });
   }
   return groups;
 }
 
 /** Items in the avatar dropdown (rendered once, reused in the mobile sheet). */
-export function getUserMenuItems(isAdmin: boolean): NavLink[] {
-  if (isAdmin) {
+export function getUserMenuItems(role: NavRole): NavLink[] {
+  if (role === Role.ADMIN) {
     return [
       { label: "Profile", href: "/profile" },
       { label: "Dashboard", href: "/admin/dashboard" },
+      { label: "Orders", href: "/admin/orders/view" },
+      { label: "Deliveries", href: "/delivery" },
+      { label: "My orders", href: "/orders" },
       { label: "Activity logs", href: "/activity" },
+      { label: "Settings", href: "/settings" },
+    ];
+  }
+  if (role === Role.DELIVERY_MAN) {
+    return [
+      { label: "Profile", href: "/profile" },
+      { label: "Deliveries", href: "/delivery" },
+      { label: "My orders", href: "/orders" },
+      { label: "Activity logs", href: "/activity" },
+      { label: "Settings", href: "/settings" },
     ];
   }
   return [
     { label: "Profile", href: "/profile" },
+    { label: "My orders", href: "/orders" },
     { label: "Subscription", href: "/subscription/details" },
     { label: "Payment history", href: "/payment/history" },
     { label: "Activity logs", href: "/activity" },

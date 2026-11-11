@@ -15,7 +15,7 @@ const publicRoutes = [
   "/shop/men",
   "/shop/women",
   "/shop/children",
-  "/sales&offer",
+  "/offers",
   "/login",
   "/signup",
 ];

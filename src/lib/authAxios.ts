@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { BACKEND_URL } from "./constants";
+import { loginHref } from "./redirect";
 
 // Create an Axios instance with base config
 const api = axios.create({
@@ -56,7 +57,10 @@ api.interceptors.response.use(
           typeof window !== "undefined" &&
           !window.location.pathname.startsWith("/login")
         ) {
-          window.location.href = "/login";
+          // Come back to the current page after logging in again.
+          window.location.href = loginHref(
+            `${window.location.pathname}${window.location.search}`
+          );
         }
         return Promise.reject(refreshError);
       }

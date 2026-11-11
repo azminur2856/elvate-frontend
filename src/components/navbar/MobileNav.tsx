@@ -17,8 +17,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { loginHref } from "@/lib/redirect";
 import { ThemeToggle } from "./ThemeToggle";
-import { getUserMenuItems, isActivePath, type NavGroup, type NavLink } from "./nav-config";
+import { getUserMenuItems, isActivePath, type NavGroup, type NavLink, type NavRole } from "./nav-config";
 
 function NavItem({ item, active }: { item: NavLink; active: boolean }) {
   return (
@@ -38,12 +39,12 @@ function NavItem({ item, active }: { item: NavLink; active: boolean }) {
 export function MobileNav({
   groups,
   session,
-  isAdmin,
+  role,
   className,
 }: {
   groups: NavGroup[];
   session: Session | null;
-  isAdmin: boolean;
+  role: NavRole;
   className?: string;
 }) {
   const pathname = usePathname();
@@ -103,7 +104,7 @@ export function MobileNav({
                 Signed in as <span className="font-medium text-foreground">{session.user.name}</span>
               </p>
               <ul className="mt-1">
-                {getUserMenuItems(isAdmin).map((item) => (
+                {getUserMenuItems(role).map((item) => (
                   <li key={item.href}>
                     <NavItem item={item} active={isActivePath(pathname, item.href)} />
                   </li>
@@ -121,7 +122,7 @@ export function MobileNav({
             </div>
           ) : (
             <Button asChild className="w-full">
-              <Link href="/login">Log in</Link>
+              <Link href={loginHref(pathname)}>Log in</Link>
             </Button>
           )}
         </nav>

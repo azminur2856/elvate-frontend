@@ -6,6 +6,7 @@ import { ScanFace } from "lucide-react";
 import api from "@/lib/api";
 import { BACKEND_URL } from "@/lib/constants";
 import { getErrorMessage } from "@/lib/errors";
+import { LOGIN_NEXT_KEY, safeNextPath } from "@/lib/redirect";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { GoogleIcon } from "@/components/auth/GoogleIcon";
 import { FormField } from "@/components/forms/FormField";
@@ -25,11 +26,22 @@ export default function LoginClient() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // Where to go after logging in (`/login?next=/checkout`); same-origin paths only.
+  const [next, setNext] = useState("/");
 
-  // The backend redirects failed Google sign-ins here with ?error=<reason>.
   useEffect(() => {
-    const reason = new URLSearchParams(window.location.search).get("error");
+    const params = new URLSearchParams(window.location.search);
+    // The backend redirects failed Google sign-ins here with ?error=<reason>
+    // (and without our ?next), so fall back to the value saved before leaving.
+    const reason = params.get("error");
     if (reason) setError(OAUTH_ERRORS[reason] ?? OAUTH_ERRORS.google);
+    let saved: string | null = null;
+    try {
+      saved = sessionStorage.getItem(LOGIN_NEXT_KEY);
+    } catch {
+      // storage blocked: ignore
+    }
+    setNext(safeNextPath(params.get("next") ?? (reason ? saved : null)));
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -39,7 +51,13 @@ export default function LoginClient() {
     try {
       const res = await api.post("/auth/login", { email, password });
       if (res.status === 200) {
-        window.location.href = "/";
+        try {
+          sessionStorage.removeItem(LOGIN_NEXT_KEY);
+        } catch {
+          // storage blocked: nothing to clear
+        }
+        // Full navigation so the server-rendered navbar picks up the session.
+        window.location.href = next;
         return;
       }
       setError(res.data?.message || "Invalid login credentials.");
@@ -108,6 +126,13 @@ export default function LoginClient() {
           variant="outline"
           className="w-full"
           onClick={() => {
+            // Google returns to /google, which reads this to continue to `next`.
+            try {
+              if (next !== "/") sessionStorage.setItem(LOGIN_NEXT_KEY, next);
+              else sessionStorage.removeItem(LOGIN_NEXT_KEY);
+            } catch {
+              // storage blocked: the user lands on the home page instead
+            }
             window.location.href = `${BACKEND_URL}/auth/google/login`;
           }}
         >
@@ -115,7 +140,7 @@ export default function LoginClient() {
           Continue with Google
         </Button>
         <Button asChild type="button" variant="secondary" className="w-full">
-          <Link href="/faceLogin">
+          <Link href={next !== "/" ? `/faceLogin?next=${encodeURIComponent(next)}` : "/faceLogin"}>
             <ScanFace aria-hidden="true" />
             Log in with your face
           </Link>

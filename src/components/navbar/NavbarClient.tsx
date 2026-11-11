@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { Session } from "@/lib/session";
-import { Role } from "@/lib/enums/role.enum";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { loginHref } from "@/lib/redirect";
 import { CartButton } from "./CartButton";
 import { DesktopNav } from "./DesktopNav";
 import { MobileNav } from "./MobileNav";
@@ -19,8 +20,9 @@ type Props = {
 };
 
 export default function NavbarClient({ className, session }: Props) {
-  const isAdmin = session?.user?.role === Role.ADMIN;
-  const groups = getNavGroups(isAdmin);
+  const pathname = usePathname();
+  const role = session?.user?.role ?? null;
+  const groups = getNavGroups(role);
 
   return (
     <header
@@ -36,7 +38,7 @@ export default function NavbarClient({ className, session }: Props) {
         <MobileNav
           groups={groups}
           session={session}
-          isAdmin={isAdmin}
+          role={role}
           className="lg:hidden"
         />
 
@@ -57,10 +59,10 @@ export default function NavbarClient({ className, session }: Props) {
           </Button>
           <ThemeToggle />
           {session ? (
-            <UserMenu session={session} isAdmin={isAdmin} />
+            <UserMenu session={session} role={role} />
           ) : (
             <Button asChild size="sm">
-              <Link href="/login">Log in</Link>
+              <Link href={loginHref(pathname)}>Log in</Link>
             </Button>
           )}
         </div>

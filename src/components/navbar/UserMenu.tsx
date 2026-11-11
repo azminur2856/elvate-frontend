@@ -4,7 +4,7 @@ import Link from "next/link";
 import { LogOut } from "lucide-react";
 import type { Session } from "@/lib/session";
 import { useLogout } from "@/hooks/useLogout";
-import { getUserMenuItems } from "@/components/navbar/nav-config";
+import { getUserMenuItems, type NavRole } from "@/components/navbar/nav-config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,13 +38,13 @@ export function initials(name: string | undefined): string {
 
 export function UserMenu({
   session,
-  isAdmin,
+  role,
 }: {
   session: Session;
-  isAdmin: boolean;
+  role: NavRole;
 }) {
   const { logout, loading } = useLogout();
-  const items = getUserMenuItems(isAdmin);
+  const items = getUserMenuItems(role);
   const { user } = session;
 
   return (

@@ -26,6 +26,14 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Old URLs that moved. `&` in a path is fragile (shells, analytics, some
+  // proxies), so the offers page now lives at /offers.
+  async redirects() {
+    return [
+      { source: "/sales&offer", destination: "/offers", permanent: true },
+      { source: "/sales%26offer", destination: "/offers", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

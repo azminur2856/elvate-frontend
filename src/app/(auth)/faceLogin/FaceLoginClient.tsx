@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ScanFace } from "lucide-react";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errors";
+import { safeNextPath } from "@/lib/redirect";
 import { captureFrame, useFaceAlignment } from "@/hooks/useFaceAlignment";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { FormField } from "@/components/forms/FormField";
@@ -17,13 +17,18 @@ import { Input } from "@/components/ui/input";
 type Result = { type: "success" | "error"; text: string } | null;
 
 export default function FaceLoginClient() {
-  const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const { status, cameraError } = useFaceAlignment(videoRef, true);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [result, setResult] = useState<Result>(null);
   const [loading, setLoading] = useState(false);
+  // `/faceLogin?next=/checkout` (passed on from the login page).
+  const [next, setNext] = useState("/");
+
+  useEffect(() => {
+    setNext(safeNextPath(new URLSearchParams(window.location.search).get("next")));
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +56,8 @@ export default function FaceLoginClient() {
         return;
       }
       setResult({ type: "success", text: res.data.message || "Logged in." });
-      setTimeout(() => router.push("/"), 500);
+      // Full navigation so the server-rendered navbar picks up the session.
+      setTimeout(() => window.location.assign(next), 500);
     } catch (err) {
       setResult({ type: "error", text: getErrorMessage(err, "Face login failed.") });
     } finally {
@@ -64,7 +70,10 @@ export default function FaceLoginClient() {
       title="Face login"
       description="Enter your email, align your face, then log in."
       footer={
-        <Link href="/login" className="text-link hover:underline">
+        <Link
+          href={next !== "/" ? `/login?next=${encodeURIComponent(next)}` : "/login"}
+          className="text-link hover:underline"
+        >
           Use password instead
         </Link>
       }
