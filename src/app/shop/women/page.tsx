@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import { Sparkles } from "lucide-react";
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import { CatalogPage, type RawSearchParams } from "@/components/shop/catalog/CatalogPage";
 
-export const metadata: Metadata = { title: "Women's collection" };
+export const metadata: Metadata = {
+  title: "Women",
+  description: "Dresses, tops, trousers and shoes for women. Shop online at Elvate with cash on delivery.",
+};
 
-export default function WomenPage() {
-  return (
-    <ComingSoon
-      title="Women's collection coming soon"
-      description="An exciting selection of products and offers tailored for women is on the way."
-      icon={Sparkles}
-      backHref="/shop"
-      backLabel="Back to shop"
-    />
-  );
+export default async function WomenPage({ searchParams }: { searchParams: Promise<RawSearchParams> }) {
+  return <CatalogPage slug="women" searchParams={await searchParams} description="Dresses, tops, trousers and shoes for women." />;
 }
