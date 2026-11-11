@@ -1,16 +1,8 @@
 import type { Metadata } from "next";
-import { Truck } from "lucide-react";
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import DeliveryClient from "./DeliveryClient";
 
-export const metadata: Metadata = { title: "Deliveries" };
+export const metadata: Metadata = { title: "Deliveries", robots: { index: false } };
 
 export default function DeliveryPage() {
-  return (
-    <ComingSoon
-      title="Deliveries"
-      description="Assigned deliveries will appear here."
-      icon={Truck}
-      badge="Under development"
-    />
-  );
+  return <DeliveryClient />;
 }

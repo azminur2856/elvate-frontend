@@ -21,6 +21,8 @@ type ConfirmDialogProps = {
   /** Styles the confirm button as destructive (delete, cancel subscription…). */
   destructive?: boolean;
   loading?: boolean;
+  /** Disable the confirm button (e.g. until a required checkbox is ticked). */
+  confirmDisabled?: boolean;
   onConfirm: () => void | Promise<void>;
   /** Optional extra controls rendered between the description and the footer. */
   children?: React.ReactNode;
@@ -40,6 +42,7 @@ export function ConfirmDialog({
   cancelLabel = "Cancel",
   destructive,
   loading,
+  confirmDisabled,
   onConfirm,
   children,
 }: ConfirmDialogProps) {
@@ -58,6 +61,7 @@ export function ConfirmDialog({
           <Button
             variant={destructive ? "destructive" : "default"}
             loading={loading}
+            disabled={confirmDisabled}
             onClick={() => void onConfirm()}
           >
             {confirmLabel}
