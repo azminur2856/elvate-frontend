@@ -2,12 +2,11 @@ import Link from "next/link";
 import type { ProductCard as ProductCardData } from "@/types/commerce";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { productHref } from "@/lib/catalog-url";
 import { CountdownTimer } from "./CountdownTimer";
 import { PriceTag } from "./PriceTag";
 import { ProductImage } from "./ProductImage";
 import { RatingStars } from "./RatingStars";
-
-export const productHref = (slug: string) => `/shop/product/${encodeURIComponent(slug)}`;
 
 type ProductCardProps = {
   product: ProductCardData;
