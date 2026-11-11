@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Download } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -160,7 +161,7 @@ export default function ViewUsersClient() {
 
   const columns: DataTableColumn<User>[] = [
     { key: "sl", header: "#", align: "center", className: "w-12 text-muted-foreground", cell: (_, i) => (page - 1) * PAGE_SIZE + i + 1 },
-    { key: "name", header: "Name", cell: (u) => <span className="font-medium">{u.firstName} {u.lastName}</span> },
+    { key: "name", header: "Name", cell: (u) => <Link href={`/admin/users/${u.id}`} className="font-medium text-link hover:underline">{u.firstName} {u.lastName}</Link> },
     { key: "email", header: "Email", cell: (u) => u.email },
     { key: "totalPaid", header: "Total paid", numeric: true, cell: (u) => formatMoney(u.totalPaid) },
     { key: "active", header: "Active", align: "center", cell: (u) => <StatusBadge ok={u.isActive} /> },

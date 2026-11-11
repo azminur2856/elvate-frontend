@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Pencil, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -114,7 +115,7 @@ export default function ManageUsersClient() {
       className: "w-12 text-muted-foreground",
       cell: (_, i) => (page - 1) * PAGE_SIZE + i + 1,
     },
-    { key: "name", header: "Name", cell: (u) => <span className="font-medium">{fullName(u)}</span> },
+    { key: "name", header: "Name", cell: (u) => <Link href={`/admin/users/${u.id}`} className="font-medium text-link hover:underline">{fullName(u)}</Link> },
     { key: "email", header: "Email", cell: (u) => u.email },
     {
       key: "role",
