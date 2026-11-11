@@ -3,6 +3,7 @@
 import { ThemeProvider } from "next-themes";
 import { MotionConfig } from "motion/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { CartProvider } from "@/components/cart/CartProvider";
 
 /**
  * Client-side providers for the whole app.
@@ -11,7 +12,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
  *  - MotionConfig: makes every `motion` component honour
  *    prefers-reduced-motion automatically.
  */
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  loggedIn,
+  children,
+}: {
+  /** From the session cookie (root layout); picks guest vs server cart. */
+  loggedIn: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <ThemeProvider
       attribute="class"
@@ -20,7 +28,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
     >
       <MotionConfig reducedMotion="user">
-        <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
+        <TooltipProvider delayDuration={200}>
+          <CartProvider loggedIn={loggedIn}>{children}</CartProvider>
+        </TooltipProvider>
       </MotionConfig>
     </ThemeProvider>
   );
