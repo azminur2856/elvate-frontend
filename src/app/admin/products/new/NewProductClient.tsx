@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { toast } from "react-hot-toast";
 import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
-import type { ProductDetail } from "@/types/commerce";
+import type { AdminProductDetail } from "@/types/commerce";
 import { useCategoryTree } from "@/hooks/useCategoryTree";
 import { ProductForm } from "@/components/admin/products/ProductForm";
 import { newVariantRow, rowError, rowToInput, VariantEditor, type VariantRow } from "@/components/admin/products/VariantEditor";
@@ -42,7 +42,7 @@ export default function NewProductClient() {
         }}
         onSubmit={async (body) => {
           try {
-            const res = await api.post<ProductDetail>("/admin/products", {
+            const res = await api.post<AdminProductDetail>("/admin/products", {
               ...body,
               variants: variants.map(rowToInput),
             });

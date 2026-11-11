@@ -10,6 +10,7 @@ import type { CartLine, CartView } from "@/types/commerce";
 export const MAX_PER_LINE = 10;
 
 const STORAGE_KEY = "elvate:cart";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const EMPTY: CartView = { items: [], itemCount: 0, subtotal: 0, currency: "BDT" };
 
 type GuestLine = { variantId: string; quantity: number };
@@ -25,7 +26,11 @@ function readGuest(): GuestLine[] {
     return parsed
       .filter(
         (l): l is GuestLine =>
-          typeof l?.variantId === "string" && Number.isInteger(l?.quantity) && l.quantity > 0
+          typeof l?.variantId === "string" &&
+          // Ids are uuids; anything else would make /cart/preview reject the whole cart (400).
+          UUID_RE.test(l.variantId) &&
+          Number.isInteger(l?.quantity) &&
+          l.quantity > 0
       )
       .map((l) => ({ variantId: l.variantId, quantity: Math.min(MAX_PER_LINE, l.quantity) }));
   } catch {
@@ -114,6 +119,8 @@ export function CartProvider({ loggedIn, children }: { loggedIn: boolean; childr
     setGuestCount(lines.reduce((s, l) => s + l.quantity, 0));
     if (!lines.length) return EMPTY;
     const res = await api.post<CartView>("/cart/preview", { items: lines });
+    // The priced view is the truth from here on (also for the badge fallback).
+    setGuestCount(res.data.itemCount);
     // Drop variants the server no longer knows (deleted products).
     writeGuest(toGuest(res.data));
     return res.data;

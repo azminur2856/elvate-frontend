@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -27,7 +30,7 @@ type ProductImageProps = {
  * Fills its (positioned, sized) parent. ImageKit URLs go through the Next
  * image optimiser; anything else (e.g. an admin-entered category image URL)
  * is rendered unoptimised so an unknown host can never crash the page.
- * Without a URL it shows a neutral placeholder.
+ * Without a URL, or when the image fails to load, it shows a neutral placeholder.
  */
 export function ProductImage({
   src,
@@ -37,7 +40,9 @@ export function ProductImage({
   className,
   wrapperClassName,
 }: ProductImageProps) {
-  if (!src) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+
+  if (!src || failedSrc === src) {
     return (
       <div
         className={cn(
@@ -46,7 +51,7 @@ export function ProductImage({
         )}
       >
         <ImageOff aria-hidden="true" className="size-8 opacity-60" />
-        <span className="sr-only">{alt ? `${alt}: no image` : "No image"}</span>
+        {alt ? <span className="sr-only">{alt}: no image</span> : null}
       </div>
     );
   }
@@ -59,6 +64,7 @@ export function ProductImage({
         sizes={sizes}
         priority={priority}
         unoptimized={!isOptimizableImage(src)}
+        onError={() => setFailedSrc(src)}
         className={cn("object-cover", className)}
       />
     </div>

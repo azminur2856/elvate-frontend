@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import type { ProductDetail } from "@/types/commerce";
+import type { AdminProductDetail } from "@/types/commerce";
 import type { FlatCategory } from "@/hooks/useCategoryTree";
 import { formatBDT } from "@/lib/format";
 import { slugify, SLUG_RE } from "@/lib/slug";
@@ -35,7 +35,7 @@ export type ProductDetailsBody = {
 type Errors = Partial<Record<"name" | "slug" | "description" | "categoryId" | "price" | "salePrice", string>>;
 
 type ProductFormProps = {
-  product?: ProductDetail | null;
+  product?: AdminProductDetail | null;
   categories: FlatCategory[];
   /** Throw to show the error at the top of the form. */
   onSubmit: (body: ProductDetailsBody) => Promise<void>;
@@ -56,12 +56,9 @@ export function ProductForm({ product, categories, onSubmit, submitLabel, childr
   const [brand, setBrand] = useState(product?.brand ?? "");
   const [categoryId, setCategoryId] = useState<string | null>(product?.category.id ?? null);
   const [price, setPrice] = useState(product ? String(product.price) : "");
-  // The detail's effectivePrice may include a flash sale; the form edits the regular sale price.
   const [salePrice, setSalePrice] = useState(
-    product && product.isOnSale && !product.flashSaleEndsAt ? String(product.effectivePrice) : ""
+    product?.salePrice != null ? String(product.salePrice) : ""
   );
-  // Edit mode: only send salePrice when the field was changed (see above).
-  const [saleTouched, setSaleTouched] = useState(false);
   const [material, setMaterial] = useState(product?.material ?? "");
   const [care, setCare] = useState(product?.careInstructions ?? "");
   const [specs, setSpecs] = useState<SpecRow[]>(specsToRows(product?.specifications));
@@ -104,7 +101,7 @@ export function ProductForm({ product, categories, onSubmit, submitLabel, childr
       brand: clear(brand),
       categoryId: categoryId as string,
       price: p,
-      salePrice: editing && !saleTouched ? undefined : salePrice.trim() ? Number(salePrice) : editing ? null : undefined,
+      salePrice: salePrice.trim() ? Number(salePrice) : editing ? null : undefined,
       material: clear(material),
       careInstructions: clear(care),
       specifications: rowsToSpecs(specs),
@@ -189,7 +186,6 @@ export function ProductForm({ product, categories, onSubmit, submitLabel, childr
             inputMode="decimal"
             value={salePrice}
             onChange={(e) => {
-              setSaleTouched(true);
               setSalePrice(e.target.value);
             }}
           />

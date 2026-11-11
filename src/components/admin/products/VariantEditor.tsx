@@ -37,15 +37,25 @@ export const newVariantRow = (): VariantRow => ({
   dirty: true,
 });
 
-export const variantToRow = (v: ProductVariant, productPrice: number): VariantRow => ({
+export const variantToRow = (
+  v: ProductVariant & { priceOverride?: number | null },
+  productPrice: number
+): VariantRow => ({
   key: v.id,
   id: v.id,
   size: v.size ?? "",
   color: v.color ?? "",
   sku: v.sku ?? "",
   stock: String(v.stock),
-  // Only show an override when it differs from the product price.
-  price: v.price !== productPrice ? String(v.price) : "",
+  // The admin API sends `priceOverride`; otherwise infer it from a price that differs.
+  price:
+    v.priceOverride !== undefined
+      ? v.priceOverride !== null
+        ? String(v.priceOverride)
+        : ""
+      : v.price !== productPrice
+        ? String(v.price)
+        : "",
   dirty: false,
 });
 
@@ -98,12 +108,12 @@ export function VariantEditor({ rows, onRowsChange, productId, productPrice }: V
     try {
       const body = rowToInput(r);
       const res = r.id
-        ? await api.patch<ProductVariant>(`/admin/products/variants/${r.id}`, {
+        ? await api.patch<ProductVariant & { priceOverride?: number | null }>(`/admin/products/variants/${r.id}`, {
             ...body,
             // An emptied override goes back to the product price.
             price: r.price.trim() ? Number(r.price) : null,
           })
-        : await api.post<ProductVariant>(`/admin/products/${productId}/variants`, body);
+        : await api.post<ProductVariant & { priceOverride?: number | null }>(`/admin/products/${productId}/variants`, body);
       onRowsChange(rows.map((x) => (x.key === r.key ? variantToRow(res.data, productPrice ?? 0) : x)));
       toast.success("Variant saved.");
     } catch (err) {

@@ -233,3 +233,9 @@ export type ReviewEligibility = { canReview: boolean; reason: string | null };
 
 /** Generic `{ success: true }` reply */
 export type SuccessResponse = { success: true };
+
+/** `GET/POST/PATCH /admin/products[/:id]` (ADMIN · STAFF): detail plus admin-only fields. */
+export type AdminProductDetail = ProductDetail & {
+  salePrice: number | null; viewCount: number; soldCount: number;
+  variants: (ProductVariant & { priceOverride: number | null })[];
+};

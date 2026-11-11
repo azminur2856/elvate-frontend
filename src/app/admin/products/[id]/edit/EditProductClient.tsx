@@ -9,7 +9,7 @@ import { toast } from "react-hot-toast";
 import api from "@/lib/authAxios";
 import { productHref } from "@/lib/catalog-url";
 import { getErrorMessage } from "@/lib/errors";
-import type { ProductDetail } from "@/types/commerce";
+import type { AdminProductDetail } from "@/types/commerce";
 import { useCategoryTree } from "@/hooks/useCategoryTree";
 import { ImageManager } from "@/components/admin/products/ImageManager";
 import { ProductForm } from "@/components/admin/products/ProductForm";
@@ -26,7 +26,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function EditProductClient({ id, created }: { id: string; created: boolean }) {
   const router = useRouter();
   const { flat } = useCategoryTree();
-  const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [product, setProduct] = useState<AdminProductDetail | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "notFound" | "error">("loading");
   const [error, setError] = useState("");
   const [variants, setVariants] = useState<VariantRow[]>([]);
@@ -35,7 +35,7 @@ export default function EditProductClient({ id, created }: { id: string; created
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const apply = (p: ProductDetail) => {
+  const apply = (p: AdminProductDetail) => {
     setProduct(p);
     setVariants(p.variants.map((v) => variantToRow(v, p.price)));
   };
@@ -43,7 +43,7 @@ export default function EditProductClient({ id, created }: { id: string; created
   useEffect(() => {
     let cancelled = false;
     api
-      .get<ProductDetail>(`/admin/products/${encodeURIComponent(id)}`)
+      .get<AdminProductDetail>(`/admin/products/${encodeURIComponent(id)}`)
       .then((res) => {
         if (cancelled) return;
         apply(res.data);
@@ -67,7 +67,7 @@ export default function EditProductClient({ id, created }: { id: string; created
     if (!product) return;
     setToggling(true);
     try {
-      const res = await api.patch<ProductDetail>(`/admin/products/${product.id}`, { isActive: !product.isActive });
+      const res = await api.patch<AdminProductDetail>(`/admin/products/${product.id}`, { isActive: !product.isActive });
       apply(res.data);
       setFormKey((k) => k + 1);
       toast.success(res.data.isActive ? "The product is now live in the shop." : "The product is now hidden.");
@@ -140,7 +140,8 @@ export default function EditProductClient({ id, created }: { id: string; created
           <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {product.isActive ? <Badge variant="success">Visible</Badge> : <Badge variant="secondary">Hidden</Badge>}
             <span>
-              Updated <LocalTime value={product.updatedAt} mode="datetime" />
+              Updated <LocalTime value={product.updatedAt} mode="datetime" /> · {product.soldCount} sold ·{" "}
+              {product.viewCount} {product.viewCount === 1 ? "view" : "views"}
             </span>
           </p>
         </div>
@@ -204,7 +205,7 @@ export default function EditProductClient({ id, created }: { id: string; created
               submitLabel="Save details"
               onSubmit={async (body) => {
                 try {
-                  const res = await api.patch<ProductDetail>(`/admin/products/${product.id}`, body);
+                  const res = await api.patch<AdminProductDetail>(`/admin/products/${product.id}`, body);
                   setProduct(res.data);
                   setFormKey((k) => k + 1);
                   toast.success("Details saved.");
