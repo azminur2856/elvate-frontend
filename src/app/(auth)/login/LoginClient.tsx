@@ -6,7 +6,7 @@ import { ScanFace } from "lucide-react";
 import api from "@/lib/api";
 import { BACKEND_URL } from "@/lib/constants";
 import { getErrorMessage } from "@/lib/errors";
-import { LOGIN_NEXT_KEY, safeNextPath } from "@/lib/redirect";
+import { afterLoginTarget, LOGIN_NEXT_KEY, safeNextPath } from "@/lib/redirect";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { GoogleIcon } from "@/components/auth/GoogleIcon";
 import { FormField } from "@/components/forms/FormField";
@@ -57,7 +57,7 @@ export default function LoginClient() {
           // storage blocked: nothing to clear
         }
         // Full navigation so the server-rendered navbar picks up the session.
-        window.location.href = next;
+        window.location.href = afterLoginTarget(next);
         return;
       }
       setError(res.data?.message || "Invalid login credentials.");

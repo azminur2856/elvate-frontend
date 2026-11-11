@@ -45,3 +45,9 @@ export function loginHref(next?: string | null): string {
   const safe = safeNextPath(next, "");
   return safe && safe !== "/" ? `/login?next=${encodeURIComponent(safe)}` : "/login";
 }
+
+/** Role-aware landing route (see app/after-login/route.ts). */
+export const AFTER_LOGIN = "/after-login";
+
+/** Where to send the browser after a successful login. */
+export const afterLoginTarget = (next: string) => (next === "/" ? AFTER_LOGIN : next);

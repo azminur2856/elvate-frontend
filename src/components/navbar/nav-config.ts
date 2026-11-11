@@ -85,11 +85,33 @@ export function getNavGroups(role: NavRole): NavGroup[] {
   if (role === Role.ADMIN) {
     groups.push({ label: "Admin", href: "/admin/dashboard", sections: ADMIN_SECTIONS });
   }
+  if (role === Role.STAFF) {
+    groups.push({ label: "Shop management", href: "/admin/orders/view", items: STAFF_LINKS });
+  }
   return groups;
 }
 
+/** STAFF only sees the shop-running pages (see middleware STAFF_ADMIN_PATHS). */
+const STAFF_LINKS: NavLink[] = [
+  { label: "Orders", href: "/admin/orders/view", description: "Confirm, pack, ship and assign deliveries" },
+  { label: "Order stats", href: "/admin/orders/stats", description: "Revenue, status mix and low stock" },
+  { label: "Products", href: "/admin/products/view", description: "Catalogue, images, variants and stock" },
+  { label: "Categories", href: "/admin/products/categories", description: "Category tree" },
+  { label: "Reviews", href: "/admin/reviews", description: "Approve or reject customer reviews" },
+];
+
 /** Items in the avatar dropdown (rendered once, reused in the mobile sheet). */
 export function getUserMenuItems(role: NavRole): NavLink[] {
+  if (role === Role.STAFF) {
+    return [
+      { label: "Profile", href: "/profile" },
+      { label: "Orders", href: "/admin/orders/view" },
+      { label: "Products", href: "/admin/products/view" },
+      { label: "My orders", href: "/orders" },
+      { label: "Activity logs", href: "/activity" },
+      { label: "Settings", href: "/settings" },
+    ];
+  }
   if (role === Role.ADMIN) {
     return [
       { label: "Profile", href: "/profile" },

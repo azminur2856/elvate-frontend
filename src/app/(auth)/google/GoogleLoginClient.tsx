@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { FormMessage } from "@/components/forms/FormMessage";
 import { Button } from "@/components/ui/button";
-import { LOGIN_NEXT_KEY, safeNextPath } from "@/lib/redirect";
+import { afterLoginTarget, LOGIN_NEXT_KEY, safeNextPath } from "@/lib/redirect";
 
 export default function GoogleLoginClient() {
   const [countdown, setCountdown] = useState(3);
@@ -21,11 +21,11 @@ export default function GoogleLoginClient() {
   }, []);
 
   // Full navigation so the server-rendered navbar picks up the new session.
-  const go = () => window.location.replace(next);
+  const go = () => window.location.replace(afterLoginTarget(next));
 
   useEffect(() => {
     if (countdown === 0) {
-      window.location.replace(next);
+      window.location.replace(afterLoginTarget(next));
       return;
     }
     const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);

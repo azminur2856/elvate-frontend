@@ -1,7 +1,7 @@
 // middleware.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "./lib/session";
-import { Role } from "./lib/enums/role.enum";
+import { Role, STAFF_ADMIN_PATHS } from "./lib/enums/role.enum";
 import { loginHref, safeNextPath } from "./lib/redirect";
 
 // Pages a logged-in user should not see (they are sent on to `?next` or "/").
@@ -32,9 +32,13 @@ export default async function middleware(req: NextRequest) {
 
   const role = session.user?.role;
 
-  // Admin-only routes
-  if (startsWithSegment(pathname, "/admin") && role !== Role.ADMIN) {
-    return NextResponse.redirect(new URL("/403", req.nextUrl));
+  // Admin area: ADMIN everywhere; STAFF only orders, products (incl. categories) and reviews.
+  if (startsWithSegment(pathname, "/admin")) {
+    const staffAllowed =
+      role === Role.STAFF && STAFF_ADMIN_PATHS.some((p) => startsWithSegment(pathname, p));
+    if (role !== Role.ADMIN && !staffAllowed) {
+      return NextResponse.redirect(new URL("/403", req.nextUrl));
+    }
   }
 
   // Delivery area: delivery men, and admins may view it

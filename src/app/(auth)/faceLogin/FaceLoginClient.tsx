@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ScanFace } from "lucide-react";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errors";
-import { safeNextPath } from "@/lib/redirect";
+import { afterLoginTarget, safeNextPath } from "@/lib/redirect";
 import { captureFrame, useFaceAlignment } from "@/hooks/useFaceAlignment";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { FormField } from "@/components/forms/FormField";
@@ -57,7 +57,7 @@ export default function FaceLoginClient() {
       }
       setResult({ type: "success", text: res.data.message || "Logged in." });
       // Full navigation so the server-rendered navbar picks up the session.
-      setTimeout(() => window.location.assign(next), 500);
+      setTimeout(() => window.location.assign(afterLoginTarget(next)), 500);
     } catch (err) {
       setResult({ type: "error", text: getErrorMessage(err, "Face login failed.") });
     } finally {
