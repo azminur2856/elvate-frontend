@@ -9,7 +9,7 @@ import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
 import { formatBDT } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { Address, CartLine, PaymentMethod, PlaceOrderResponse, Quote } from "@/types/commerce";
+import type { Address, CartLine, PaymentMethod, PlaceOrderConflict, PlaceOrderResponse, Quote } from "@/types/commerce";
 import { AddressBook } from "@/components/address/AddressBook";
 import { useCart } from "@/components/cart/CartProvider";
 import { variantLabel } from "@/components/cart/CartLineItem";
@@ -151,12 +151,21 @@ export default function CheckoutClient() {
       router.push(`/orders/${res.data.order.id}?placed=1`);
     } catch (err) {
       if (isAxiosError(err) && err.response?.status === 409) {
-        // Stock changed since the quote: re-price and show what changed.
+        // Stock changed since the quote. The 409 lists `{ variantId, available }`;
+        // name those lines, then re-price the cart.
+        const conflict = (err.response.data as Partial<PlaceOrderConflict> | undefined)?.items ?? [];
+        const before = quote?.items ?? cart.items;
         await refresh();
         const q = await requestQuote(address.id, coupon);
+        const fromBody = conflict
+          .map((c) => {
+            const line = before.find((l) => l.variantId === c.variantId);
+            return line ? { ...line, stock: c.available, available: false } : null;
+          })
+          .filter((l): l is CartLine => l !== null);
         setPlaceError({
           message: getErrorMessage(err, "Some items in your cart changed while you were checking out."),
-          lines: (q?.items ?? []).filter((l) => !l.available),
+          lines: fromBody.length ? fromBody : (q?.items ?? []).filter((l) => !l.available),
         });
       } else {
         setPlaceError({ message: getErrorMessage(err, "Could not place your order. Please try again."), lines: [] });
@@ -181,7 +190,9 @@ export default function CheckoutClient() {
 
   const items = quote?.items ?? cart.items;
   const threshold = quote?.freeShippingThreshold ?? null;
-  const missingForFree = threshold !== null && quote ? Math.max(0, threshold - quote.subtotal) : 0;
+  // The backend compares `subtotal − discount` with the threshold.
+  const missingForFree =
+    threshold !== null && quote ? Math.max(0, threshold - (quote.subtotal - quote.discount)) : 0;
 
   return (
     <PageShell width="xl" title="Checkout">

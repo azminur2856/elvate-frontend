@@ -99,7 +99,7 @@ export type OrderDetail = OrderSummary & {
 export type Quote = {
   items: CartLine[]; subtotal: number; discount: number; shippingFee: number; total: number;
   coupon: { code: string; valid: boolean; message: string; discount: number } | null;
-  freeShippingThreshold: number | null;
+  freeShippingThreshold: number | null;  // shipping is free when (subtotal − discount) ≥ threshold (the amount after the coupon)
 };
 
 export type Review = {
@@ -171,6 +171,12 @@ export type AddressInput = {
 
 /** `POST /orders` */
 export type PlaceOrderResponse = { order: OrderDetail; checkoutUrl: string | null };
+
+/** `POST /orders` 409 body (stock changed). `available` = units in stock now (0 also for inactive products). */
+export type PlaceOrderConflict = {
+  statusCode: 409; error: "Conflict"; message: string;
+  items: { variantId: string; available: number }[];
+};
 
 /** `GET /orders/session/:sessionId` */
 export type OrderSessionStatus = { orderId: string; orderNumber: string; paymentStatus: PaymentStatus };
