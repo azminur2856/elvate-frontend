@@ -1,0 +1,66 @@
+import Image from "next/image";
+import { ImageOff } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+/** Only ImageKit is whitelisted in next.config.ts `images.remotePatterns`. */
+export function isOptimizableImage(src: string): boolean {
+  try {
+    return new URL(src).hostname === "ik.imagekit.io";
+  } catch {
+    return false;
+  }
+}
+
+type ProductImageProps = {
+  src: string | null | undefined;
+  alt: string;
+  /** Responsive `sizes` hint for next/image. */
+  sizes?: string;
+  priority?: boolean;
+  /** Classes for the <img> (object-fit, hover transform …). */
+  className?: string;
+  /** Classes for the wrapper; it is `relative` and fills its parent by default. */
+  wrapperClassName?: string;
+};
+
+/**
+ * Fills its (positioned, sized) parent. ImageKit URLs go through the Next
+ * image optimiser; anything else (e.g. an admin-entered category image URL)
+ * is rendered unoptimised so an unknown host can never crash the page.
+ * Without a URL it shows a neutral placeholder.
+ */
+export function ProductImage({
+  src,
+  alt,
+  sizes = "(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw",
+  priority,
+  className,
+  wrapperClassName,
+}: ProductImageProps) {
+  if (!src) {
+    return (
+      <div
+        className={cn(
+          "absolute inset-0 flex items-center justify-center bg-muted text-muted-foreground",
+          wrapperClassName
+        )}
+      >
+        <ImageOff aria-hidden="true" className="size-8 opacity-60" />
+        <span className="sr-only">{alt ? `${alt}: no image` : "No image"}</span>
+      </div>
+    );
+  }
+  return (
+    <div className={cn("absolute inset-0 overflow-hidden bg-muted", wrapperClassName)}>
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes={sizes}
+        priority={priority}
+        unoptimized={!isOptimizableImage(src)}
+        className={cn("object-cover", className)}
+      />
+    </div>
+  );
+}
