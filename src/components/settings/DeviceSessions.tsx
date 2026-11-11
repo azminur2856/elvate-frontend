@@ -13,12 +13,10 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const METHOD_LABELS: Record<string, string> = {
-  LOCAL: "Password",
-  PASSWORD: "Password",
-  EMAIL: "Password",
-  GOOGLE: "Google",
-  FACE: "Face login",
+const METHOD_LABELS: Record<DeviceSession["loginMethod"], string> = {
+  localLogin: "Password",
+  googleOAuth: "Google",
+  faceLogin: "Face login",
 };
 
 /** Rough "Chrome on Windows" from a user-agent string. */
@@ -133,7 +131,7 @@ export function DeviceSessions() {
                     {s.current ? <Badge variant="success">This device</Badge> : null}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {METHOD_LABELS[s.loginMethod?.toUpperCase()] ?? s.loginMethod} · signed in{" "}
+                    {METHOD_LABELS[s.loginMethod] ?? s.loginMethod} · signed in{" "}
                     <LocalTime value={s.createdAt} /> · last active <LocalTime value={s.lastUsedAt} mode="datetime" />
                   </p>
                 </div>

@@ -121,7 +121,11 @@ export type FlashSale = {
   isActive: boolean; product: ProductCard;
 };
 
-export type DeviceSession = { id: string; loginMethod: string; userAgent: string | null; createdAt: string; lastUsedAt: string; current: boolean };
+export type DeviceSession = {
+  id: string;
+  loginMethod: "localLogin" | "googleOAuth" | "faceLogin";   // exactly the values stored in user_sessions
+  userAgent: string | null; createdAt: string; lastUsedAt: string; current: boolean;
+};
 
 // ---------------------------------------------------------------------------
 // Endpoint-specific shapes (from the endpoint tables in the contract)
