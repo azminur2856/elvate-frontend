@@ -4,6 +4,10 @@ export type NavLink = {
   label: string;
   href: string;
   description?: string;
+  /** Small count shown next to the label (e.g. pending reviews). */
+  badge?: number;
+  /** Screen-reader text after the badge number ("pending"). */
+  badgeLabel?: string;
 };
 
 export type NavGroup = {
@@ -14,6 +18,8 @@ export type NavGroup = {
   items?: NavLink[];
   /** Optional column headings for large groups (admin). */
   sections?: { label: string; items: NavLink[] }[];
+  /** Don't add the "All …" link at the top of the dropdown. */
+  hideAllLink?: boolean;
 };
 
 /** The viewer's role, or null when logged out. */
@@ -52,7 +58,7 @@ const ADMIN_SECTIONS: NavGroup["sections"] = [
       { label: "Order stats", href: "/admin/orders/stats" },
       { label: "Coupons", href: "/admin/offers/coupons" },
       { label: "Flash sales", href: "/admin/offers/flash-sales" },
-      { label: "Reviews", href: "/admin/reviews" },
+      { label: "Reviews", href: "/admin/reviews", badgeLabel: "pending" },
     ],
   },
   {
@@ -86,7 +92,7 @@ export function getNavGroups(role: NavRole): NavGroup[] {
     groups.push({ label: "Admin", href: "/admin/dashboard", sections: ADMIN_SECTIONS });
   }
   if (role === Role.STAFF) {
-    groups.push({ label: "Shop management", href: "/admin/orders/view", items: STAFF_LINKS });
+    groups.push({ label: "Shop management", href: "/admin/orders/view", items: STAFF_LINKS, hideAllLink: true });
   }
   return groups;
 }
@@ -97,7 +103,7 @@ const STAFF_LINKS: NavLink[] = [
   { label: "Order stats", href: "/admin/orders/stats", description: "Revenue, status mix and low stock" },
   { label: "Products", href: "/admin/products/view", description: "Catalogue, images, variants and stock" },
   { label: "Categories", href: "/admin/products/categories", description: "Category tree" },
-  { label: "Reviews", href: "/admin/reviews", description: "Approve or reject customer reviews" },
+  { label: "Reviews", href: "/admin/reviews", description: "Approve or reject customer reviews", badgeLabel: "pending" },
 ];
 
 /** Items in the avatar dropdown (rendered once, reused in the mobile sheet). */
@@ -146,4 +152,14 @@ export function getUserMenuItems(role: NavRole): NavLink[] {
 export function isActivePath(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+/** Attach counts (by href) to matching links in groups / sections. */
+export function applyBadges(groups: NavGroup[], badges: Record<string, number | undefined>): NavGroup[] {
+  const decorate = (l: NavLink): NavLink => (badges[l.href] ? { ...l, badge: badges[l.href] } : l);
+  return groups.map((g) => ({
+    ...g,
+    items: g.items?.map(decorate),
+    sections: g.sections?.map((s) => ({ ...s, items: s.items.map(decorate) })),
+  }));
 }

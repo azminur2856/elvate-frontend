@@ -1,8 +1,11 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import api from "@/lib/authAxios";
+import { isShopManager } from "@/lib/enums/role.enum";
+import { REVIEWS_CHANGED_EVENT } from "@/lib/events";
 import type { Session } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,17 +16,36 @@ import { MobileNav } from "./MobileNav";
 import { SearchInput } from "./SearchInput";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
-import { getNavGroups } from "./nav-config";
+import { applyBadges, getNavGroups } from "./nav-config";
 
 type Props = {
   className?: string;
   session: Session | null;
 };
 
+
+/** Pending review count for ADMIN / STAFF (badge on "Reviews"). */
+function usePendingReviews(enabled: boolean): number | undefined {
+  const [count, setCount] = useState<number>();
+  useEffect(() => {
+    if (!enabled) return;
+    const load = () =>
+      api
+        .get<{ total: number }>("/admin/reviews", { params: { status: "PENDING", page: 1, pageSize: 1 } })
+        .then((res) => setCount(res.data.total))
+        .catch(() => setCount(undefined));
+    void load();
+    window.addEventListener(REVIEWS_CHANGED_EVENT, load);
+    return () => window.removeEventListener(REVIEWS_CHANGED_EVENT, load);
+  }, [enabled]);
+  return count;
+}
+
 export default function NavbarClient({ className, session }: Props) {
   const pathname = usePathname();
   const role = session?.user?.role ?? null;
-  const groups = getNavGroups(role);
+  const pendingReviews = usePendingReviews(isShopManager(role));
+  const groups = applyBadges(getNavGroups(role), { "/admin/reviews": pendingReviews });
 
   return (
     <header
