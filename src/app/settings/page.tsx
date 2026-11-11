@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import { Settings } from "lucide-react";
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import SettingsClient from "./SettingsClient";
+import { SETTINGS_TABS, type SettingsTab } from "./tabs";
 
-export const metadata: Metadata = { title: "Settings" };
+export const metadata: Metadata = { title: "Settings", robots: { index: false } };
 
-export default function SettingsPage() {
-  return (
-    <ComingSoon
-      title="Settings"
-      description="Account settings are under development. For now, manage your details from your profile."
-      icon={Settings}
-      backHref="/profile"
-      backLabel="Go to profile"
-    />
-  );
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
+  const initial = SETTINGS_TABS.includes(tab as SettingsTab) ? (tab as SettingsTab) : "account";
+  return <SettingsClient initialTab={initial} />;
 }
