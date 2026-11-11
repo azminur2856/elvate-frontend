@@ -1,18 +1,12 @@
 import type { Metadata } from "next";
-import { ClipboardList } from "lucide-react";
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import { ALL_ORDER_STATUSES } from "@/lib/orders";
+import type { OrderStatus } from "@/types/commerce";
+import AdminOrdersClient from "./AdminOrdersClient";
 
 export const metadata: Metadata = { title: "Orders" };
 
-export default function AdminOrdersPage() {
-  return (
-    <ComingSoon
-      title="Orders"
-      description="Order management is under development."
-      icon={ClipboardList}
-      badge="Under development"
-      backHref="/admin/dashboard"
-      backLabel="Back to dashboard"
-    />
-  );
+export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+  const { status } = await searchParams;
+  const initial = ALL_ORDER_STATUSES.includes(status as OrderStatus) ? (status as OrderStatus) : null;
+  return <AdminOrdersClient initialStatus={initial} />;
 }

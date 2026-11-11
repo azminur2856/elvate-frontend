@@ -16,8 +16,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import Link from "next/link";
+import { Clock } from "lucide-react";
 import api from "@/lib/authAxios";
-import { formatMoney, PLAN_LABELS } from "@/lib/format";
+import { formatBDT, formatMoney, PLAN_LABELS } from "@/lib/format";
+import type { OrderStats } from "@/types/commerce";
+import { Button } from "@/components/ui/button";
 import { PageShell } from "@/components/shared/PageShell";
 import { FormMessage } from "@/components/forms/FormMessage";
 import { ChartCard } from "@/components/admin/ChartCard";
@@ -47,6 +51,15 @@ export default function DashboardClient() {
   const [activityStats, setActivityStats] = useState<ActivityStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  // Shop KPIs load separately: the dashboard still works while the order API is unavailable.
+  const [orderStats, setOrderStats] = useState<OrderStats | null>(null);
+
+  useEffect(() => {
+    api
+      .get<OrderStats>("/admin/orders/stats", { params: { days: 30 } })
+      .then((res) => setOrderStats(res.data))
+      .catch(() => setOrderStats(null));
+  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -92,6 +105,43 @@ export default function DashboardClient() {
         <FormMessage variant="error">Could not load the dashboard data. Try refreshing the page.</FormMessage>
       ) : (
         <div className="grid gap-6">
+          {orderStats ? (
+            <section aria-labelledby="shop-kpis" className="grid gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 id="shop-kpis" className="text-lg font-semibold">
+                  Shop · last 30 days
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {orderStats.pendingCount > 0 ? (
+                    <Button asChild size="sm">
+                      <Link href="/admin/orders/view?status=PENDING">
+                        <Clock aria-hidden="true" />
+                        {orderStats.pendingCount} pending {orderStats.pendingCount === 1 ? "order" : "orders"}
+                      </Link>
+                    </Button>
+                  ) : null}
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/admin/orders/stats">Order stats</Link>
+                  </Button>
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard label="Orders" value={orderStats.totalOrders} accent={1} />
+                <StatCard label="Revenue" value={formatBDT(orderStats.revenue)} accent={2} hint="Paid orders" />
+                <StatCard label="Average order" value={formatBDT(orderStats.avgOrderValue)} accent={3} />
+                <StatCard
+                  label="Low-stock variants"
+                  value={orderStats.lowStock.length}
+                  accent={5}
+                  hint={
+                    <Link href="/admin/products/view" className="text-link hover:underline">
+                      Manage products
+                    </Link>
+                  }
+                />
+              </div>
+            </section>
+          ) : null}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard label="Total users" value={userStats?.total ?? 0} accent={1} hint={`${userStats?.active ?? 0} active`} />
             <StatCard label="Subscriptions" value={subStats?.totalSubscriptions ?? 0} accent={2} />
