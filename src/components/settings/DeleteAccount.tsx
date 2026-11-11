@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
@@ -22,13 +22,28 @@ import { Input } from "@/components/ui/input";
  * only sign in with Google. The server anonymises the account, keeps order
  * history and clears the cookie; we then go home.
  */
-export function DeleteAccount({ googleOnly = false }: { googleOnly?: boolean }) {
+export function DeleteAccount() {
   const [open, setOpen] = useState(false);
-  const [useWord, setUseWord] = useState(googleOnly);
+  // From `GET /users/profile` → `hasPassword` (BE-20). Unknown = offer both.
+  const [hasPassword, setHasPassword] = useState<boolean | null>(null);
+  const [useWord, setUseWord] = useState(false);
   const [password, setPassword] = useState("");
   const [word, setWord] = useState("");
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    if (!open || hasPassword !== null) return;
+    api
+      .get<{ hasPassword?: boolean }>("/users/profile")
+      .then((res) => {
+        if (typeof res.data.hasPassword === "boolean") {
+          setHasPassword(res.data.hasPassword);
+          setUseWord(!res.data.hasPassword);
+        }
+      })
+      .catch(() => undefined);
+  }, [open, hasPassword]);
 
   const ready = useWord ? word.trim() === "DELETE" : password.length > 0;
 
@@ -97,7 +112,7 @@ export function DeleteAccount({ googleOnly = false }: { googleOnly?: boolean }) 
                 />
               </FormField>
             )}
-            {!googleOnly ? (
+            {hasPassword === null ? (
               <Button
                 type="button"
                 variant="link"
