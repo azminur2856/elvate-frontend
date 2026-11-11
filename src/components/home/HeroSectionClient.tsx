@@ -21,7 +21,7 @@ interface HeroSectionProps {
 function HeroSectionClient({ user }: HeroSectionProps) {
   let title = "Elevate your digital experience";
   let message =
-    "Welcome to Elvate — your all-in-one platform for digital services and smart shopping. Convert PDFs, edit images, remove backgrounds or resize files in a click, and discover quality products delivered to your door.";
+    "Welcome to Elvate — online tools and a clothing shop in one place. Extract text from PDFs and photos, resize and edit images, and order clothing for the whole family with delivery to your door.";
 
   if (user) {
     if (user.role === Role.ADMIN) {

@@ -1,46 +1,52 @@
+import { getFeaturedReviews } from "@/lib/catalog";
 import { InfiniteMovingCards } from "../ui/infinite-moving-cards";
 import { SectionHeading } from "./SectionHeading";
 
-const testimonials = [
+/** Shown until enough approved reviews exist (or when the API is asleep). */
+const FALLBACK = [
   {
-    quote:
-      "Elvate is a game changer. I can edit images, convert files and shop for everything I need in one place — my workflow has never been smoother.",
+    quote: "I extract text from scanned PDFs for my thesis notes. It takes seconds and the result is clean.",
     name: "Ayesha Rahman",
-    title: "Freelance designer",
-  },
-  {
-    quote:
-      "The background removal and PDF tools are fantastic. Elvate saves me hours every week, and support is always prompt and helpful.",
-    name: "Md. Tanvir Hossain",
-    title: "Startup founder",
-  },
-  {
-    quote:
-      "Finally, a marketplace where I can buy quality products and use digital tools without switching between a dozen websites.",
-    name: "Nusrat Jahan",
     title: "University student",
   },
   {
-    quote:
-      "The subscription unlocks so many extra features — totally worth it. Batch image processing has made my client projects much faster.",
+    quote: "Resizing product photos to exact pixels used to need a desktop app. Now I do it in the browser.",
+    name: "Md. Tanvir Hossain",
+    title: "Small business owner",
+  },
+  {
+    quote: "Ordered a shirt with cash on delivery and could follow the order until it reached my door.",
+    name: "Nusrat Jahan",
+    title: "Customer, Dhaka",
+  },
+  {
+    quote: "Image to text works well even on photos of printed receipts. Handy for my accounts.",
     name: "Imran Alam",
-    title: "Photographer & creator",
+    title: "Freelancer",
   },
   {
-    quote:
-      "What I love about Elvate is the peace of mind. My data feels safe, transactions are secure, and every tool just works.",
+    quote: "Signing in with my face is quick, and the monthly plan was easy to cancel when I didn't need it.",
     name: "Sharmin Akter",
-    title: "E-commerce seller",
-  },
-  {
-    quote:
-      "From shopping for gadgets to quick file conversions, everything is seamless and reliable.",
-    name: "Mehedi Hasan",
-    title: "Tech enthusiast",
+    title: "Content creator",
   },
 ];
 
-function Testimonials() {
+/** Minimum number of real reviews before they replace the fallback list. */
+const MIN_REVIEWS = 3;
+
+async function Testimonials() {
+  const res = await getFeaturedReviews(10);
+  const reviews = res.ok
+    ? res.data
+        .filter((r) => r.comment)
+        .map((r) => ({
+          quote: r.comment as string,
+          name: r.user?.name ?? "Customer",
+          title: r.product ? `Rated ${r.rating}/5 · ${r.product.name}` : `Rated ${r.rating}/5`,
+        }))
+    : [];
+  const items = reviews.length >= MIN_REVIEWS ? reviews : FALLBACK;
+
   return (
     <section className="relative isolate overflow-hidden py-16 sm:py-20" aria-labelledby="testimonials">
       <div
@@ -48,8 +54,13 @@ function Testimonials() {
         className="absolute inset-0 -z-10 bg-grid [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
       />
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <SectionHeading id="testimonials" eyebrow="Testimonials" title="What people say about Elvate" className="mb-10" />
-        <InfiniteMovingCards items={testimonials} direction="right" speed="slow" />
+        <SectionHeading
+          id="testimonials"
+          eyebrow={items === reviews ? "Customer reviews" : "Testimonials"}
+          title="What people say about Elvate"
+          className="mb-10"
+        />
+        <InfiniteMovingCards items={items} direction="right" speed="slow" />
       </div>
     </section>
   );

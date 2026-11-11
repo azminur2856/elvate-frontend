@@ -46,8 +46,8 @@ export const InfiniteMovingCards = ({
   if (reduced) {
     return (
       <ul className={cn("flex snap-x gap-4 overflow-x-auto py-4", className)}>
-        {items.map((item) => (
-          <li key={item.name} className="snap-start">
+        {items.map((item, i) => (
+          <li key={`${item.name}-${i}`} className="snap-start">
             <TestimonialCard item={item} />
           </li>
         ))}
@@ -77,14 +77,14 @@ export const InfiniteMovingCards = ({
           pauseOnHover && "hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]"
         )}
       >
-        {items.map((item) => (
-          <li key={item.name}>
+        {items.map((item, i) => (
+          <li key={`${item.name}-${i}`}>
             <TestimonialCard item={item} />
           </li>
         ))}
         {/* Duplicate set for the seamless loop; hidden from assistive tech. */}
-        {items.map((item) => (
-          <li key={`${item.name}-dup`} aria-hidden="true">
+        {items.map((item, i) => (
+          <li key={`${item.name}-${i}-dup`} aria-hidden="true">
             <TestimonialCard item={item} />
           </li>
         ))}
