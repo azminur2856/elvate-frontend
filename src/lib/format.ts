@@ -41,3 +41,19 @@ export const PLAN_LABELS: Record<string, string> = {
   "6m": "6 months",
   "12m": "12 months",
 };
+
+/** ISO string → value for <input type="datetime-local"> in the viewer's time zone. */
+export function toDateTimeLocal(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** <input type="datetime-local"> value (local time) → ISO UTC string, or undefined. */
+export function fromDateTimeLocal(value: string): string | undefined {
+  if (!value) return undefined;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+}
