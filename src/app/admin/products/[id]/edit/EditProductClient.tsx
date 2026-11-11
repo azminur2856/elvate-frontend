@@ -165,7 +165,7 @@ export default function EditProductClient({ id, created }: { id: string; created
         </div>
       </header>
 
-      <div className="grid gap-6">
+      <div className="grid gap-6 [&>*]:min-w-0">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Photos</CardTitle>

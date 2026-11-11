@@ -127,7 +127,7 @@ export function ProductForm({ product, categories, onSubmit, submitLabel, childr
       : 0;
 
   return (
-    <form onSubmit={submit} className="grid gap-6" noValidate>
+    <form onSubmit={submit} className="grid gap-6 [&>*]:min-w-0" noValidate>
       {formError ? <FormMessage variant="error">{formError}</FormMessage> : null}
 
       <div className="grid gap-4 sm:grid-cols-2">

@@ -184,7 +184,7 @@ export function ProductPurchase({ product }: { product: ProductDetail }) {
       </div>
       {inCart > 0 ? (
         <p className="-mt-3 text-sm text-muted-foreground">
-          {inCart} of this {inCart === 1 ? "item is" : "items are"} already in your cart.
+          You already have {inCart} in your cart.
         </p>
       ) : null}
     </div>
