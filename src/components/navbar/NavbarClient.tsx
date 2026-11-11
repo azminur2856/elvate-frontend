@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Session } from "@/lib/session";
@@ -52,7 +53,9 @@ export default function NavbarClient({ className, session }: Props) {
         <DesktopNav groups={groups} className="mx-auto hidden lg:flex" />
 
         <div className="ml-auto flex items-center gap-1 sm:gap-2 lg:ml-0">
-          <SearchInput className="hidden md:flex" />
+          <Suspense fallback={<div className="hidden h-9 w-52 md:block lg:w-56" />}>
+            <SearchInput className="hidden md:flex" />
+          </Suspense>
           <CartButton />
           <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
             <Link href="/shop">Shop</Link>

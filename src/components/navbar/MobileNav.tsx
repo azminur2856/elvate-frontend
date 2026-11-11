@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut, Menu } from "lucide-react";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { loginHref } from "@/lib/redirect";
+import { SearchInput } from "./SearchInput";
 import { ThemeToggle } from "./ThemeToggle";
 import { getUserMenuItems, isActivePath, type NavGroup, type NavLink, type NavRole } from "./nav-config";
 
@@ -71,6 +72,17 @@ export function MobileNav({
           <SheetTitle className="font-heading text-lg italic">Elvate</SheetTitle>
           <SheetDescription className="sr-only">Site navigation</SheetDescription>
         </SheetHeader>
+
+        <div className="border-b border-border p-3 md:hidden">
+          <Suspense fallback={null}>
+            <SearchInput
+              className="flex"
+              inputClassName="w-full md:w-full lg:w-full"
+              suggestions={false}
+              onNavigate={() => setOpen(false)}
+            />
+          </Suspense>
+        </div>
 
         <nav aria-label="Primary" className="flex-1 overflow-y-auto p-3">
           {groups.map((group) => {
