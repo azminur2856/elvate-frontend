@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { isAxiosError } from "axios";
+import { toast } from "react-hot-toast";
 import { AlertTriangle, Banknote, CreditCard, Lock, TicketPercent, X } from "lucide-react";
 import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
@@ -69,11 +70,19 @@ export default function CheckoutClient() {
   // `unsure`: a server error or no answer, so the order may still have been saved.
   const [placeError, setPlaceError] = useState<{ message: string; lines: CartLine[]; unsure?: boolean } | null>(null);
   const placed = useRef(false);
+  // Set after a server error while placing (see `placeError.unsure`).
+  const unsure = useRef(false);
   const quoteSeq = useRef(0);
 
-  // Nothing to check out.
+  // Nothing to check out. After a server error an empty cart means the order was saved.
   useEffect(() => {
-    if (ready && cart.items.length === 0 && !placed.current) router.replace("/cart");
+    if (!ready || cart.items.length > 0 || placed.current) return;
+    if (unsure.current) {
+      toast("Your order most likely went through. Please check it here.");
+      router.replace("/orders");
+    } else {
+      router.replace("/cart");
+    }
   }, [ready, cart.items.length, router]);
 
   const requestQuote = useCallback(async (addressId: string | undefined, couponCode: string | null) => {
@@ -174,6 +183,7 @@ export default function CheckoutClient() {
         });
       } else if (!isAxiosError(err) || !err.response || err.response.status >= 500) {
         // The order may have been saved before the error: re-read the cart and point to My orders.
+        unsure.current = true;
         await refresh();
         setPlaceError({
           message: "Something went wrong on our side. Your order may still have gone through, so please check My orders before you try again.",
