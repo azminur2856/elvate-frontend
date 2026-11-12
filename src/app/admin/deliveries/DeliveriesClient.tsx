@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import type { DeliveriesSummary, DeliveryManOption, OrderSummary, Paginated } from "@/types/commerce";
 import { useDebounce } from "@/hooks/useDebounce";
 import { StatCard } from "@/components/admin/StatCard";
+import { AssignDeliveryManDialog, type AssignTarget } from "@/components/admin/deliveries/AssignDeliveryManDialog";
 import { OrderStatusBadge } from "@/components/orders/OrderBadges";
 import { LocalTime } from "@/components/shared/LocalTime";
 import { PageShell } from "@/components/shared/PageShell";
@@ -74,6 +75,7 @@ export default function DeliveriesClient({ initialView, initialToday }: Deliveri
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const [assigning, setAssigning] = useState<AssignTarget | null>(null);
 
   const rangeError = from && to && from > to ? "The start date must be on or before the end date." : "";
   const filtered = Boolean(view !== "all" || deliveryManId !== ANY || query || from || to);
@@ -228,6 +230,12 @@ export default function DeliveriesClient({ initialView, initialToday }: Deliveri
       align: "right",
       cell: (o) => (
         <div className="flex flex-wrap justify-end gap-2">
+          {o.status === "PROCESSING" || o.status === "SHIPPED" ? (
+            <Button size="sm" variant="outline" onClick={() => setAssigning(o)}>
+              {o.deliveryMan ? "Reassign" : "Assign"}
+              <span className="sr-only"> order {o.orderNumber}</span>
+            </Button>
+          ) : null}
           <Button asChild size="sm" variant="ghost">
             <Link href={`/admin/orders/${o.id}`}>
               Open<span className="sr-only"> order {o.orderNumber}</span>
@@ -450,6 +458,14 @@ export default function DeliveriesClient({ initialView, initialToday }: Deliveri
           </CardContent>
         </Card>
       </div>
+      <AssignDeliveryManDialog
+        order={assigning}
+        onClose={() => setAssigning(null)}
+        onAssigned={() => {
+          setAssigning(null);
+          refresh();
+        }}
+      />
     </PageShell>
   );
 }
