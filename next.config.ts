@@ -38,7 +38,13 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // FE-28: let Vercel's CDN cache the shop photos proxied from the image CDN (/img rewrite below).
+      // Projects created before 2026-04-06 do not cache external rewrites unless this header opts in;
+      // the upstream Cache-Control (1 year) then decides how long.
+      { source: "/img/:path*", headers: [{ key: "x-vercel-enable-rewrite-caching", value: "1" }] },
+    ];
   },
   /* config options here */
   eslint: {
