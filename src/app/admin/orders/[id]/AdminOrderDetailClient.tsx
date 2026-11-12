@@ -12,6 +12,7 @@ import type { DeliveryManOption, OrderDetail, OrderStatus } from "@/types/commer
 import { OrderStatusBadge, PaymentStatusBadge } from "@/components/orders/OrderBadges";
 import { AddressLines, OrderItemsList, OrderTotals } from "@/components/orders/OrderParts";
 import { OrderTimeline } from "@/components/orders/OrderTimeline";
+import { OrderCorrection } from "@/components/admin/orders/OrderCorrection";
 import { LocalTime } from "@/components/shared/LocalTime";
 import { PageShell } from "@/components/shared/PageShell";
 import { UserAvatar } from "@/components/shared/UserAvatar";
@@ -60,7 +61,7 @@ function managerMoves(from: OrderStatus, allowed: OrderStatus[]): OrderStatus[] 
   );
 }
 
-export default function AdminOrderDetailClient({ id }: { id: string }) {
+export default function AdminOrderDetailClient({ id, isAdmin = false }: { id: string; isAdmin?: boolean }) {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "notFound" | "error">("loading");
   const [error, setError] = useState("");
@@ -247,6 +248,8 @@ export default function AdminOrderDetailClient({ id }: { id: string }) {
           </CardContent>
         ) : null}
       </Card>
+
+      {isAdmin && order.status === "OUT_FOR_DELIVERY" ? <OrderCorrection order={order} onDone={setOrder} /> : null}
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="grid gap-6">
