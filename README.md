@@ -115,6 +115,8 @@
 - **Search** in the navigation bar with live suggestions
 - **Offers** page with flash-sale countdowns and copyable coupon codes
 - A **cart** that works before signing in and is merged into the account after login
+- A **free-delivery note** on the cart ("Add ৳X more for free delivery", with a progress bar) and the product page, shown only while
+  free delivery is on
 
 ### Checkout and orders
 - One-page checkout: pick or add an address, apply a coupon, see the delivery fee (inside / outside Dhaka, free above a threshold)
@@ -147,7 +149,9 @@
 - **Dashboard** with charts for orders, revenue, users, subscriptions, payments and activity
 - Users and roles (export the list as PDF), coupons and flash sales, payments, subscriptions, activity logs with filters and CSV export
 - **Feature switches**: turn SMS codes and face login on or off for the whole site; the pages adapt to the switch
-- A logged **correction** when a delivery man cannot update an order himself
+- **Delivery fees** in Settings: the inside and outside Dhaka fees and the free-delivery amount (0 = off), with a live example; new
+  checkouts use them, placed orders keep their fee
+- A logged **correction** when a delivery man cannot update an order themselves
 
 ### Everywhere
 - Light and dark theme, responsive layout, keyboard and screen-reader friendly components, loading skeletons and empty states
