@@ -129,7 +129,11 @@ export default function CheckoutClient() {
   };
 
   const unavailable = (quote?.items ?? []).filter((l) => !l.available);
-  const canPlace = Boolean(address && quote && !quoting && unavailable.length === 0 && !placing);
+  // A failed re-quote leaves the previous price on screen (e.g. the old
+  // delivery fee after switching address), so don't place until it works.
+  const canPlace = Boolean(
+    address && quote && !quoting && !quoteError && unavailable.length === 0 && !placing
+  );
 
   const placeOrder = async () => {
     if (!address || !canPlace) return;
@@ -331,10 +335,27 @@ export default function CheckoutClient() {
               </p>
             </div>
 
-            {quoteError ? <FormMessage variant="error">{quoteError}</FormMessage> : null}
+            {quoteError ? (
+              <div className="grid gap-2">
+                <FormMessage variant="error">{quoteError}</FormMessage>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="justify-self-start"
+                  loading={quoting}
+                  onClick={() => void requestQuote(address?.id, coupon)}
+                >
+                  Try again
+                </Button>
+              </div>
+            ) : null}
 
             {quote ? (
-              <div aria-busy={quoting} className={cn("transition-opacity", quoting && "opacity-60")}>
+              <div
+                aria-busy={quoting}
+                className={cn("transition-opacity", (quoting || quoteError) && "opacity-60")}
+              >
                 <OrderTotals
                   subtotal={quote.subtotal}
                   discount={quote.discount}
