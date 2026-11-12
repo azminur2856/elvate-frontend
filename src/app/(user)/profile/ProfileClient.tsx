@@ -7,6 +7,7 @@ import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { initials } from "@/components/navbar/UserMenu";
+import { useFeatureFlags } from "@/components/settings/FeatureFlagsProvider";
 import { PageShell } from "@/components/shared/PageShell";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { FormMessage } from "@/components/forms/FormMessage";
@@ -68,6 +69,7 @@ export default function ProfileClient() {
   const [showUpdate, setShowUpdate] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [phoneModalOpen, setPhoneModalOpen] = useState(false);
+  const { smsOtpEnabled } = useFeatureFlags();
   const [faceModalOpen, setFaceModalOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
@@ -173,9 +175,14 @@ export default function ProfileClient() {
                 <StatusBadge ok={user.isPhoneVerified} okLabel="Verified" noLabel="Not verified" />
               ) : null}
               {user.phone && !user.isPhoneVerified ? (
-                <Button variant="link" size="sm" className="h-auto p-0 text-link" onClick={() => setPhoneModalOpen(true)}>
-                  Verify now
-                </Button>
+                // SMS codes only while the admin switch is on (read as off while loading).
+                smsOtpEnabled ? (
+                  <Button variant="link" size="sm" className="h-auto p-0 text-link" onClick={() => setPhoneModalOpen(true)}>
+                    Verify now
+                  </Button>
+                ) : (
+                  <span className="text-sm text-muted-foreground">Phone verification is currently unavailable</span>
+                )
               ) : null}
             </Row>
             <Row label="Face login">

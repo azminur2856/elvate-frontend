@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
+import { isSmsTurnedOff, useFeatureFlags } from "@/components/settings/FeatureFlagsProvider";
 import {
   Dialog,
   DialogContent,
@@ -39,6 +40,7 @@ export default function PhoneVerificationModal({
   const [loading, setLoading] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const { refresh: refreshFlags } = useFeatureFlags();
 
   // Reset when the dialog closes (previously done inside render via setTimeout).
   useEffect(() => {
@@ -51,6 +53,17 @@ export default function PhoneVerificationModal({
     }
   }, [open]);
 
+  /**
+   * The admin switched SMS off while the dialog was open (403). Say so and
+   * re-read the switch so the profile hides "Verify now".
+   */
+  const turnedOff = (err: unknown) => {
+    if (!isSmsTurnedOff(err)) return false;
+    setError("Phone verification is currently unavailable. Please try again later.");
+    void refreshFlags();
+    return true;
+  };
+
   const requestOtp = async () => {
     setLoading(true);
     setInfo(null);
@@ -60,6 +73,7 @@ export default function PhoneVerificationModal({
       setInfo(res.data?.message ?? "OTP sent.");
       setStep("verify");
     } catch (err) {
+      if (turnedOff(err)) return;
       setError(getErrorMessage(err, "Failed to send OTP."));
     } finally {
       setLoading(false);
@@ -76,6 +90,7 @@ export default function PhoneVerificationModal({
       onVerified?.();
       onClose();
     } catch (err) {
+      if (turnedOff(err)) return;
       setError(getErrorMessage(err, "Invalid or expired OTP."));
     } finally {
       setLoading(false);
