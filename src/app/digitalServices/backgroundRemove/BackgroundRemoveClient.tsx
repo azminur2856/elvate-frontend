@@ -14,7 +14,7 @@ import { FileSummary } from "@/components/tools/FileSummary";
 import { ToolPageShell } from "@/components/tools/ToolPageShell";
 import { Button } from "@/components/ui/button";
 
-const ACCEPT = ["image/jpeg", "image/png", "image/jpg", "image/heic"];
+const ACCEPT = ["image/jpeg", "image/png", "image/jpg", "image/heic", "image/webp"];
 const MAX_BYTES = 10 * 1024 * 1024;
 
 /** `POST /ocr/image/remove-bg` → `{ contentType: "image/png", data: base64 }`. */
@@ -26,7 +26,7 @@ type RemoveBgResponse = { contentType: string; data: string };
  * friendly "temporarily unavailable" note instead of an error toast.
  */
 export default function BackgroundRemoveClient() {
-  const tool = useToolUpload({ accept: ACCEPT, acceptLabel: "JPG, PNG or HEIC" });
+  const tool = useToolUpload({ accept: ACCEPT, acceptLabel: "JPG, PNG, WebP or HEIC" });
   const [result, setResult] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState<string | null>(null);
 
@@ -96,8 +96,8 @@ export default function BackgroundRemoveClient() {
         ) : (
           <DropZone
             inputRef={tool.inputRef}
-            accept=".jpg,.jpeg,.png,.heic"
-            acceptLabel="JPG, PNG or HEIC, up to 10 MB"
+            accept=".jpg,.jpeg,.png,.webp,.heic"
+            acceptLabel="JPG, PNG, WebP or HEIC, up to 10 MB"
             onFile={tool.select}
             icon={ImageIcon}
             title="Upload an image"

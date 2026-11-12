@@ -30,7 +30,7 @@ type EditOptions = {
   blur?: number;
 };
 
-const ACCEPT = ["image/png", "image/jpeg", "image/jpg", "image/heic"];
+const ACCEPT = ["image/png", "image/jpeg", "image/jpg", "image/heic", "image/webp"];
 
 /** Clockwise quarter turns, the only rotations the API accepts. */
 const ROTATIONS = [0, 90, 180, 270] as const;
@@ -107,7 +107,7 @@ function RangeControl({
 }
 
 export default function EditImageClient() {
-  const tool = useToolUpload({ accept: ACCEPT, acceptLabel: "JPG, PNG or HEIC" });
+  const tool = useToolUpload({ accept: ACCEPT, acceptLabel: "JPG, PNG, WebP or HEIC" });
   const [opts, setOpts] = useState<EditOptions>({ ...DEFAULT_EDIT });
   const [editedUrl, setEditedUrl] = useState<string | null>(null);
   const [cropMode, setCropMode] = useState(false);
@@ -234,8 +234,8 @@ export default function EditImageClient() {
         ) : (
           <DropZone
             inputRef={tool.inputRef}
-            accept=".jpg,.jpeg,.png,.heic"
-            acceptLabel="JPG, PNG or HEIC"
+            accept=".jpg,.jpeg,.png,.webp,.heic"
+            acceptLabel="JPG, PNG, WebP or HEIC"
             onFile={(f) => {
               resetEdits();
               tool.select(f);

@@ -12,10 +12,10 @@ import { FileSummary } from "@/components/tools/FileSummary";
 import { TextResultPanel } from "@/components/tools/ResultPanel";
 import { ToolPageShell } from "@/components/tools/ToolPageShell";
 
-const ACCEPT = ["image/jpeg", "image/jpg", "image/png", "image/heic"];
+const ACCEPT = ["image/jpeg", "image/jpg", "image/png", "image/heic", "image/webp"];
 
 export default function ImageToTextClient() {
-  const tool = useToolUpload({ accept: ACCEPT, acceptLabel: "JPG, PNG or HEIC" });
+  const tool = useToolUpload({ accept: ACCEPT, acceptLabel: "JPG, PNG, WebP or HEIC" });
   const [text, setText] = useState<string | null>(null);
 
   const selectFile = (f: File | null | undefined) => {
@@ -67,8 +67,8 @@ export default function ImageToTextClient() {
         ) : (
           <DropZone
             inputRef={tool.inputRef}
-            accept=".jpg,.jpeg,.png,.heic"
-            acceptLabel="JPG, PNG or HEIC"
+            accept=".jpg,.jpeg,.png,.webp,.heic"
+            acceptLabel="JPG, PNG, WebP or HEIC"
             onFile={selectFile}
             icon={ImageIcon}
             title="Upload an image"

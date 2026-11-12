@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const ACCEPT = ["image/jpeg", "image/png", "image/jpg", "image/heic"];
+const ACCEPT = ["image/jpeg", "image/png", "image/jpg", "image/heic", "image/webp"];
 
 const PRESETS = [
   { label: "Passport photo (300×400 px)", width: 300, height: 400 },
@@ -33,7 +33,7 @@ const PRESETS = [
 ];
 
 export default function ImageResizeClient() {
-  const tool = useToolUpload({ accept: ACCEPT, acceptLabel: "JPG, PNG or HEIC" });
+  const tool = useToolUpload({ accept: ACCEPT, acceptLabel: "JPG, PNG, WebP or HEIC" });
   const [orig, setOrig] = useState<{ w: number; h: number } | null>(null);
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
@@ -204,8 +204,8 @@ export default function ImageResizeClient() {
         ) : (
           <DropZone
             inputRef={tool.inputRef}
-            accept=".jpg,.jpeg,.png,.heic"
-            acceptLabel="JPG, PNG or HEIC"
+            accept=".jpg,.jpeg,.png,.webp,.heic"
+            acceptLabel="JPG, PNG, WebP or HEIC"
             onFile={(f) => {
               setResizedUrl(null);
               tool.select(f);
