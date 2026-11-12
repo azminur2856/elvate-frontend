@@ -19,7 +19,6 @@ import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const IMAGEKIT = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT;
 const PAGE_SIZE = 10;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -38,7 +37,7 @@ type UserDetail = {
   isFaceVerified: boolean;
   profileImage: string | null;
   /** BE-28: `/media/users/<id>/avatar?size=sm&v=…`, or null. */
-  avatarUrl?: string | null;
+  avatarUrl: string | null;
   createdAt: string;
   updatedAt: string;
   lastLoginAt: string | null;
@@ -48,14 +47,6 @@ type UserDetail = {
 type Log = { id: number; activity: string; description: string; createdAt: string };
 /** `GET /activity-logs/filter?userId=` */
 type LogsResponse = { data: Log[]; total: number; totalPages: number };
-
-function photoUrl(u: Pick<UserDetail, "id" | "profileImage">): string | undefined {
-  if (!u.profileImage) return undefined;
-  if (u.profileImage.startsWith("http")) return u.profileImage;
-  if (!IMAGEKIT) return undefined;
-  if (u.profileImage === "profile.png") return `${IMAGEKIT}/user_profile_image/${u.profileImage}`;
-  return `${IMAGEKIT}/user_profile_image/user_${u.id}/${u.profileImage}`;
-}
 
 const logColumns = (page: number): DataTableColumn<Log>[] => [
   { key: "sl", header: "#", align: "center", className: "w-12 text-muted-foreground", cell: (_, i) => (page - 1) * PAGE_SIZE + i + 1 },
@@ -183,7 +174,7 @@ export default function UserDetailClient({ id }: { id: string }) {
     <PageShell width="xl">
       {back}
       <header className="mb-8 flex flex-wrap items-center gap-4">
-        <UserAvatar name={name} avatarUrl={user.avatarUrl} legacySrc={photoUrl(user)} className="size-16 text-lg" />
+        <UserAvatar name={name} avatarUrl={user.avatarUrl} className="size-16 text-lg" />
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-3xl font-bold tracking-tight">{name}</h1>
           <p className="truncate text-muted-foreground">{user.email}</p>

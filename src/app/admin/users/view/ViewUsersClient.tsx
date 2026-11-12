@@ -37,7 +37,6 @@ import {
 } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const IMAGEKIT = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT;
 const PAGE_SIZE = 10;
 
 type User = {
@@ -53,7 +52,7 @@ type User = {
   isPhoneVerified: boolean;
   profileImage: string;
   /** BE-28: `/media/users/<id>/avatar?size=sm&v=…`, or null. */
-  avatarUrl?: string | null;
+  avatarUrl: string | null;
   createdAt: string;
   totalPaid: number;
 };
@@ -79,16 +78,7 @@ const optionalFields: { key: FieldKey; label: string }[] = [
   { key: "totalPaid", label: "Total paid" },
 ];
 
-function photoUrl(user: User): string | undefined {
-  if (user.avatarUrl !== undefined) return mediaSrc(user.avatarUrl);
-  if (!user.profileImage) return undefined;
-  if (user.profileImage.startsWith("http")) return user.profileImage;
-  if (!IMAGEKIT) return undefined;
-  if (user.profileImage === "profile.png") {
-    return `${IMAGEKIT}/user_profile_image/${user.profileImage}`;
-  }
-  return `${IMAGEKIT}/user_profile_image/user_${user.id}/${user.profileImage}`;
-}
+const photoUrl = (user: User): string | undefined => mediaSrc(user.avatarUrl);
 
 function fieldValue(user: User, key: FieldKey): string {
   const v = user[key];
@@ -168,7 +158,7 @@ export default function ViewUsersClient() {
     { key: "sl", header: "#", align: "center", className: "w-12 text-muted-foreground", cell: (_, i) => (page - 1) * PAGE_SIZE + i + 1 },
     { key: "name", header: "Name", cell: (u) => (
         <span className="flex items-center gap-2">
-          <UserAvatar name={`${u.firstName} ${u.lastName ?? ""}`} avatarUrl={u.avatarUrl} legacySrc={photoUrl(u)} className="size-8 text-xs" />
+          <UserAvatar name={`${u.firstName} ${u.lastName ?? ""}`} avatarUrl={u.avatarUrl} className="size-8 text-xs" />
           <Link href={`/admin/users/${u.id}`} className="font-medium text-link hover:underline">{u.firstName} {u.lastName}</Link>
         </span>
       ) },
