@@ -18,22 +18,35 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 
-/** Switches that ask before being turned on (they cost money). */
-const CONFIRM_ON: Partial<Record<AdminSettingKey, { title: string; description: string }>> = {
+type Confirm = { to: boolean; title: string; description: string; confirmLabel: string };
+
+/** Switches that ask first: SMS before going on (it costs money), face login before going off (users lose it). */
+const CONFIRM: Partial<Record<AdminSettingKey, Confirm>> = {
   sms_otp: {
+    to: true,
     title: "Turn on SMS codes?",
     description:
       "This sends real SMS and uses SMS credits. Customers can then verify their phone and reset their password by SMS.",
+    confirmLabel: "Turn on",
+  },
+  face_login: {
+    to: false,
+    title: "Turn off face login?",
+    description:
+      "Users won't be able to set up or sign in with face login until it's turned back on. Existing setups are kept.",
+    confirmLabel: "Turn off",
   },
 };
 
 /** Shown when a switch can't be turned on (`available: false`). */
 const UNAVAILABLE_NOTE: Partial<Record<AdminSettingKey, string>> = {
   sms_otp: "SMS provider not configured",
+  face_login: "Face service not configured",
 };
 
 const ON_OFF_TOAST: Partial<Record<AdminSettingKey, [on: string, off: string]>> = {
   sms_otp: ["SMS codes are on.", "SMS codes are off."],
+  face_login: ["Face login is on.", "Face login is off."],
 };
 
 export default function AdminSettingsClient() {
@@ -41,7 +54,7 @@ export default function AdminSettingsClient() {
   const [settings, setSettings] = useState<AdminSetting[] | null>(null);
   const [loadError, setLoadError] = useState("");
   const [saving, setSaving] = useState<AdminSettingKey | null>(null);
-  const [confirming, setConfirming] = useState<AdminSetting | null>(null);
+  const [confirming, setConfirming] = useState<{ setting: AdminSetting; enabled: boolean } | null>(null);
 
   const load = useCallback(async () => {
     setLoadError("");
@@ -82,14 +95,14 @@ export default function AdminSettingsClient() {
   };
 
   const toggle = (setting: AdminSetting, enabled: boolean) => {
-    if (enabled && CONFIRM_ON[setting.key]) {
-      setConfirming(setting);
+    if (CONFIRM[setting.key]?.to === enabled) {
+      setConfirming({ setting, enabled });
       return;
     }
     void save(setting, enabled);
   };
 
-  const confirmCopy = confirming ? CONFIRM_ON[confirming.key] : undefined;
+  const confirmCopy = confirming ? CONFIRM[confirming.setting.key] : undefined;
 
   return (
     <PageShell width="md" title="Settings" description="Switch features on or off for the whole site.">
@@ -109,6 +122,7 @@ export default function AdminSettingsClient() {
           {settings.map((s) => {
             const switchId = `setting-${s.key}`;
             const descriptionId = `${switchId}-description`;
+            // Not configured: can't be turned on (409), but an "on" switch can still be turned off.
             const unavailable = !s.available && !s.enabled;
             return (
               <Card key={s.key}>
@@ -133,7 +147,7 @@ export default function AdminSettingsClient() {
                       aria-describedby={descriptionId}
                     />
                   </div>
-                  {unavailable ? (
+                  {!s.available ? (
                     <p className="text-sm font-medium text-warning">
                       {UNAVAILABLE_NOTE[s.key] ?? "Not available on this server"}
                     </p>
@@ -159,9 +173,10 @@ export default function AdminSettingsClient() {
         onOpenChange={(open) => !open && saving === null && setConfirming(null)}
         title={confirmCopy?.title ?? ""}
         description={confirmCopy?.description}
-        confirmLabel="Turn on"
-        loading={Boolean(confirming) && saving === confirming?.key}
-        onConfirm={() => (confirming ? save(confirming, true) : undefined)}
+        confirmLabel={confirmCopy?.confirmLabel}
+        destructive={confirming?.enabled === false}
+        loading={Boolean(confirming) && saving === confirming?.setting.key}
+        onConfirm={() => (confirming ? save(confirming.setting, confirming.enabled) : undefined)}
       />
     </PageShell>
   );
