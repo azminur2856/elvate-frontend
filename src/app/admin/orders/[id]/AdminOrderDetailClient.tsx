@@ -43,22 +43,16 @@ const DESTRUCTIVE: OrderStatus[] = ["CANCELLED", "RETURNED"];
 /** After a rider's return request (SEC-09) the two moves read differently. */
 function actionLabel(from: OrderStatus, to: OrderStatus): string {
   if (from === "RETURN_REQUESTED" && to === "RETURNED") return "Confirm return";
-  if (from === "RETURN_REQUESTED" && (to === "SHIPPED" || to === "OUT_FOR_DELIVERY")) return "Send out again";
+  if (from === "RETURN_REQUESTED" && to === "SHIPPED") return "Send out again";
   return ACTION_LABELS[to];
 }
 
 /** Delivery progress belongs to the assigned delivery man (FE-29 / BE-29). */
 const DELIVERY_MAN_MOVES: OrderStatus[] = ["OUT_FOR_DELIVERY", "DELIVERED", "RETURN_REQUESTED"];
 
-/**
- * The status buttons admins and staff get: the server's `allowedNextStatuses`
- * without the delivery man's moves. Before BE-29, "Send out again" was
- * RETURN_REQUESTED → OUT_FOR_DELIVERY, so that one move stays.
- */
-function managerMoves(from: OrderStatus, allowed: OrderStatus[]): OrderStatus[] {
-  return allowed.filter(
-    (to) => !DELIVERY_MAN_MOVES.includes(to) || (from === "RETURN_REQUESTED" && to === "OUT_FOR_DELIVERY")
-  );
+/** The status buttons admins and staff get: the server's `allowedNextStatuses` without the delivery man's moves. */
+function managerMoves(allowed: OrderStatus[]): OrderStatus[] {
+  return allowed.filter((to) => !DELIVERY_MAN_MOVES.includes(to));
 }
 
 export default function AdminOrderDetailClient({ id, isAdmin = false }: { id: string; isAdmin?: boolean }) {
@@ -202,7 +196,7 @@ export default function AdminOrderDetailClient({ id, isAdmin = false }: { id: st
 
   const notesDirty = adminNotes.trim() !== (order.adminNotes ?? "").trim();
 
-  const moves = managerMoves(order.status, order.allowedNextStatuses);
+  const moves = managerMoves(order.allowedNextStatuses);
 
   return (
     <PageShell width="xl">

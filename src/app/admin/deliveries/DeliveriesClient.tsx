@@ -121,8 +121,6 @@ export default function DeliveriesClient({ initialView, initialToday }: Deliveri
           page,
           pageSize: PAGE_SIZE,
           statuses: def.statuses.join(","),
-          // Also the single-status filter every server version understands.
-          status: def.statuses.length === 1 ? def.statuses[0] : undefined,
           unassigned: "unassigned" in def && def.unassigned ? true : undefined,
           deliveryManId: deliveryManId === ANY ? undefined : deliveryManId,
           q: query || undefined,
