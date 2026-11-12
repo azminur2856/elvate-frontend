@@ -34,7 +34,11 @@ type UserProfile = {
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
   profileImage?: string;
+  /** BE-28: our own path to the picture, `null` when there is none. */
+  avatarUrl?: string | null;
   isFaceVerified?: boolean;
+  /** False for Google-only accounts. */
+  hasPassword?: boolean;
   createdAt: string;
   updatedAt: string;
   lastLoginAt?: string;
@@ -58,6 +62,12 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 const NA = <span className="text-muted-foreground">Not set</span>;
+
+/** An uploaded picture, not the default one (before BE-28 the default is "profile.png"). */
+function hasOwnPicture(user: UserProfile): boolean {
+  if (user.avatarUrl !== undefined) return user.avatarUrl !== null;
+  return Boolean(user.profileImage) && user.profileImage !== "profile.png";
+}
 
 export default function ProfileClient() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -246,6 +256,12 @@ export default function ProfileClient() {
         open={faceModalOpen}
         onClose={() => setFaceModalOpen(false)}
         onVerified={() => void refetchUser()}
+        hasPicture={hasOwnPicture(user)}
+        hasPassword={user.hasPassword !== false}
+        onAddPicture={() => {
+          setFaceModalOpen(false);
+          setShowProfileModal(true);
+        }}
       />
       <ProfileImageUploadModal
         open={showProfileModal}
