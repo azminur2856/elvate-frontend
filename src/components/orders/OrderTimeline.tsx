@@ -85,10 +85,18 @@ export function OrderTimeline({
                 <p className="text-sm text-muted-foreground">
                   <LocalTime value={step.entry.at} mode="datetime" />
                   {step.entry.by ? (
-                    <>
-                      {" · "}by {step.entry.by.name}
-                      {step.entry.by.role ? ` (${roleLabel(step.entry.by.role)})` : ""}
-                    </>
+                    step.entry.correction ? (
+                      // BE-29: an admin correction, not the delivery man's own update.
+                      <span className="font-medium text-warning">
+                        {" · "}correction by {step.entry.by.name}
+                        {step.entry.by.role ? `, ${roleLabel(step.entry.by.role)}` : ""}
+                      </span>
+                    ) : (
+                      <>
+                        {" · "}by {step.entry.by.name}
+                        {step.entry.by.role ? ` (${roleLabel(step.entry.by.role)})` : ""}
+                      </>
+                    )
                   ) : null}
                 </p>
               ) : null}
