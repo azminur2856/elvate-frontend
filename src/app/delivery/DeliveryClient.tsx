@@ -341,8 +341,10 @@ export default function DeliveryClient() {
             <Textarea rows={3} maxLength={300} value={note} onChange={(e) => setNote(e.target.value)} />
           </FormField>
         ) : null}
-        {blocked && (needsCash || needsNote) ? (
-          <p className="text-xs text-muted-foreground">
+        {/* Hidden, not removed, once satisfied: removing it moved the
+            confirm button up under the rider's finger. */}
+        {needsCash || needsNote ? (
+          <p className={cn("text-xs text-muted-foreground", !blocked && "invisible")}>
             {needsCash ? <Badge variant="warning">Tick the box to confirm the cash</Badge> : "A note is required."}
           </p>
         ) : null}
