@@ -42,8 +42,22 @@ const DESTRUCTIVE: OrderStatus[] = ["CANCELLED", "RETURNED"];
 /** After a rider's return request (SEC-09) the two moves read differently. */
 function actionLabel(from: OrderStatus, to: OrderStatus): string {
   if (from === "RETURN_REQUESTED" && to === "RETURNED") return "Confirm return";
-  if (from === "RETURN_REQUESTED" && to === "OUT_FOR_DELIVERY") return "Send out again";
+  if (from === "RETURN_REQUESTED" && (to === "SHIPPED" || to === "OUT_FOR_DELIVERY")) return "Send out again";
   return ACTION_LABELS[to];
+}
+
+/** Delivery progress belongs to the assigned delivery man (FE-29 / BE-29). */
+const DELIVERY_MAN_MOVES: OrderStatus[] = ["OUT_FOR_DELIVERY", "DELIVERED", "RETURN_REQUESTED"];
+
+/**
+ * The status buttons admins and staff get: the server's `allowedNextStatuses`
+ * without the delivery man's moves. Before BE-29, "Send out again" was
+ * RETURN_REQUESTED → OUT_FOR_DELIVERY, so that one move stays.
+ */
+function managerMoves(from: OrderStatus, allowed: OrderStatus[]): OrderStatus[] {
+  return allowed.filter(
+    (to) => !DELIVERY_MAN_MOVES.includes(to) || (from === "RETURN_REQUESTED" && to === "OUT_FOR_DELIVERY")
+  );
 }
 
 export default function AdminOrderDetailClient({ id }: { id: string }) {
@@ -187,6 +201,8 @@ export default function AdminOrderDetailClient({ id }: { id: string }) {
 
   const notesDirty = adminNotes.trim() !== (order.adminNotes ?? "").trim();
 
+  const moves = managerMoves(order.status, order.allowedNextStatuses);
+
   return (
     <PageShell width="xl">
       {back}
@@ -209,14 +225,16 @@ export default function AdminOrderDetailClient({ id }: { id: string }) {
         <CardHeader>
           <CardTitle className="text-lg">Next step</CardTitle>
           <CardDescription>
-            {order.allowedNextStatuses.length
+            {moves.length
               ? "Move the order forward. You can add a note that appears in the timeline."
-              : "This order is finished; no further status changes are possible."}
+              : order.status === "SHIPPED" || order.status === "OUT_FOR_DELIVERY"
+                ? "With the delivery man: only they mark it out for delivery, delivered or returned."
+                : "This order is finished; no further status changes are possible."}
           </CardDescription>
         </CardHeader>
-        {order.allowedNextStatuses.length ? (
+        {moves.length ? (
           <CardContent className="flex flex-wrap gap-2">
-            {order.allowedNextStatuses.map((s) => (
+            {moves.map((s) => (
               <Button
                 key={s}
                 variant={DESTRUCTIVE.includes(s) ? "outline" : "default"}
