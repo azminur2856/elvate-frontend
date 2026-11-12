@@ -72,7 +72,7 @@ export type OrderSummary = {
   id: string; orderNumber: string;       // e.g. "ELV-261111-7KQ2"
   status: OrderStatus; paymentStatus: PaymentStatus; paymentMethod: PaymentMethod;
   total: number; itemCount: number; firstItemImage: string | null; createdAt: string;
-  customer?: { id: string; name: string; email: string };   // admin lists only
+  customer?: { id: string; name: string; email: string; avatarUrl?: string | null };   // admin lists only; avatarUrl BE-28
   deliveryMan?: { id: string; name: string } | null;        // admin lists only
 };
 
@@ -91,7 +91,7 @@ export type OrderDetail = OrderSummary & {
   shippingAddress: Omit<Address, "id" | "isDefault">;     // snapshot
   statusHistory: { status: OrderStatus; note: string | null; at: string; by: { name: string; role: string } | null }[];
   deliveryMan: { id: string; name: string; phone: string | null } | null;
-  customer: { id: string; name: string; email: string; phone: string | null };
+  customer: { id: string; name: string; email: string; phone: string | null; avatarUrl?: string | null };
   allowedNextStatuses: OrderStatus[];    // for the caller's role; drives the UI buttons
   canCancel: boolean; canPay: boolean;   // canPay = STRIPE && UNPAID && not cancelled
 };

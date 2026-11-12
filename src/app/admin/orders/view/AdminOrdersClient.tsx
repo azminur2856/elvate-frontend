@@ -13,6 +13,7 @@ import { OrderStatusBadge, PaymentStatusBadge } from "@/components/orders/OrderB
 import { StatusTabs } from "@/components/orders/StatusTabs";
 import { LocalTime } from "@/components/shared/LocalTime";
 import { PageShell } from "@/components/shared/PageShell";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { FormField } from "@/components/forms/FormField";
 import { FormMessage } from "@/components/forms/FormMessage";
 import { Button } from "@/components/ui/button";
@@ -51,9 +52,12 @@ const columns: DataTableColumn<OrderSummary>[] = [
     className: "min-w-44",
     cell: (o) =>
       o.customer ? (
-        <div className="grid gap-0.5">
-          <span className="font-medium">{o.customer.name}</span>
-          <span className="truncate text-xs text-muted-foreground">{o.customer.email}</span>
+        <div className="flex items-center gap-2">
+          <UserAvatar name={o.customer.name} avatarUrl={o.customer.avatarUrl ?? null} className="size-8 text-xs" />
+          <div className="grid min-w-0 gap-0.5">
+            <span className="font-medium">{o.customer.name}</span>
+            <span className="truncate text-xs text-muted-foreground">{o.customer.email}</span>
+          </div>
         </div>
       ) : (
         "—"

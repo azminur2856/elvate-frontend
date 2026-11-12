@@ -14,6 +14,7 @@ import { AddressLines, OrderItemsList, OrderTotals } from "@/components/orders/O
 import { OrderTimeline } from "@/components/orders/OrderTimeline";
 import { LocalTime } from "@/components/shared/LocalTime";
 import { PageShell } from "@/components/shared/PageShell";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { FormField } from "@/components/forms/FormField";
 import { FormMessage } from "@/components/forms/FormMessage";
 import { Button } from "@/components/ui/button";
@@ -268,7 +269,10 @@ export default function AdminOrderDetailClient({ id }: { id: string }) {
               </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-2 text-sm">
-              <p className="font-medium">{order.customer.name}</p>
+              <p className="flex items-center gap-2 font-medium">
+                <UserAvatar name={order.customer.name} avatarUrl={order.customer.avatarUrl ?? null} />
+                {order.customer.name}
+              </p>
               <a href={`mailto:${order.customer.email}`} className="flex items-center gap-2 text-link hover:underline">
                 <Mail aria-hidden="true" className="size-4" />
                 {order.customer.email}

@@ -13,6 +13,7 @@ import { OrderItemsList } from "@/components/orders/OrderParts";
 import { StatCard } from "@/components/admin/StatCard";
 import { LocalTime } from "@/components/shared/LocalTime";
 import { PageShell } from "@/components/shared/PageShell";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { EmptyState } from "@/components/shop/EmptyState";
 import { FormField } from "@/components/forms/FormField";
 import { FormMessage } from "@/components/forms/FormMessage";
@@ -81,7 +82,10 @@ function OrderCard({ order, onAction }: { order: DeliveryOrder; onAction: (a: Ac
       </header>
 
       <div className="grid gap-1">
-        <p className="font-medium">{order.shippingAddress.fullName}</p>
+        <p className="flex items-center gap-2 font-medium">
+          <UserAvatar name={order.shippingAddress.fullName} avatarUrl={order.customer?.avatarUrl ?? null} />
+          {order.shippingAddress.fullName}
+        </p>
         <address className="text-sm not-italic text-muted-foreground">{address}</address>
         <div className="mt-2 flex flex-wrap gap-2">
           {phone ? (
