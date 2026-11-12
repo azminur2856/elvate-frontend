@@ -11,7 +11,8 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://cdn.jsdelivr.net`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://ik.imagekit.io https://lh3.googleusercontent.com",
+  // Photos come from this origin only: people through /api/backend/media, shop photos through /img (FE-28).
+  "img-src 'self' data: blob: https://lh3.googleusercontent.com",
   "font-src 'self' data:",
   // Every API call goes through /api/backend (same origin). The face-api
   // models still come from GitHub Pages until they are self-hosted.
@@ -41,11 +42,6 @@ const nextConfig: NextConfig = {
   /* config options here */
   eslint: {
     ignoreDuringBuilds: false,
-  },
-  images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "ik.imagekit.io", pathname: "/**" },
-    ],
   },
   // Proxy every backend call through this app's own origin so the backend's
   // `session` cookie is stored first-party (under this domain) and is visible to
