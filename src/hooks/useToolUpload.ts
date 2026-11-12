@@ -11,6 +11,9 @@ type Options = {
   acceptLabel: string;
 };
 
+/** Every tool upload route accepts at most 10 MB (backend SEC-02 → 413). */
+export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
 type RunOptions = {
   subscriptionMessage?: string;
   errorMessage?: string;
@@ -43,6 +46,10 @@ export function useToolUpload({ accept, acceptLabel }: Options) {
       if (!candidate) return;
       if (!accept.includes(candidate.type)) {
         toast.error(`Only ${acceptLabel} files are allowed.`);
+        return;
+      }
+      if (candidate.size > MAX_UPLOAD_BYTES) {
+        toast.error("Please choose a file of 10 MB or less.");
         return;
       }
       setFile(candidate);

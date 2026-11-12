@@ -15,7 +15,6 @@ import { ToolPageShell } from "@/components/tools/ToolPageShell";
 import { Button } from "@/components/ui/button";
 
 const ACCEPT = ["image/jpeg", "image/png", "image/jpg", "image/heic", "image/webp"];
-const MAX_BYTES = 10 * 1024 * 1024;
 
 /** `POST /ocr/image/remove-bg` → `{ contentType: "image/png", data: base64 }`. */
 type RemoveBgResponse = { contentType: string; data: string };
@@ -41,11 +40,7 @@ export default function BackgroundRemoveClient() {
   const removeBackground = () =>
     tool.run(
       async () => {
-        if (!tool.file) return;
-        if (tool.file.size > MAX_BYTES) {
-          toast.error("Please choose an image of 10 MB or less.");
-          return;
-        }
+        if (!tool.file) return; // size and type were checked on select
         setUnavailable(null);
         const formData = new FormData();
         formData.append("file", tool.file);

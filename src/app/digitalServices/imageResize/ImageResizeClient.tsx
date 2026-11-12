@@ -205,7 +205,7 @@ export default function ImageResizeClient() {
           <DropZone
             inputRef={tool.inputRef}
             accept=".jpg,.jpeg,.png,.webp,.heic"
-            acceptLabel="JPG, PNG, WebP or HEIC"
+            acceptLabel="JPG, PNG, WebP or HEIC, up to 10 MB"
             onFile={(f) => {
               setResizedUrl(null);
               tool.select(f);

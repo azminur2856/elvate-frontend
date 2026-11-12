@@ -68,7 +68,7 @@ export default function ImageToTextClient() {
           <DropZone
             inputRef={tool.inputRef}
             accept=".jpg,.jpeg,.png,.webp,.heic"
-            acceptLabel="JPG, PNG, WebP or HEIC"
+            acceptLabel="JPG, PNG, WebP or HEIC, up to 10 MB"
             onFile={selectFile}
             icon={ImageIcon}
             title="Upload an image"
