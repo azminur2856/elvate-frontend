@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Banknote, CheckCircle2, ChevronDown, Copy, MapPin, PackageCheck, Phone, Truck, Undo2 } from "lucide-react";
+import { isAxiosError } from "axios";
 import { toast } from "react-hot-toast";
 import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
@@ -238,7 +239,16 @@ export default function DeliveryClient() {
       loadStats();
       await loadOrders();
     } catch (err) {
-      toast.error(getErrorMessage(err, "Could not update the order."));
+      const status = isAxiosError(err) ? err.response?.status : undefined;
+      if (status === 400 || status === 404) {
+        // Someone else moved or re-assigned the order meanwhile: show its real state.
+        toast.error("This order changed in the meantime. The list is up to date now.");
+        closeAction();
+        loadStats();
+        await loadOrders();
+      } else {
+        toast.error(getErrorMessage(err, "Could not update the order."));
+      }
     } finally {
       setSaving(false);
     }
