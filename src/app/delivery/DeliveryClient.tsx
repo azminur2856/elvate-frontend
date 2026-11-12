@@ -133,7 +133,7 @@ function OrderCard({ order, onAction }: { order: DeliveryOrder; onAction: (a: Ac
       <div
         className={cn(
           "flex items-center justify-between gap-3 rounded-lg px-3 py-2",
-          order.codDue > 0 ? "bg-warning/15" : "bg-success/10"
+          order.codDue > 0 || cash.label === "Cash not collected" ? "bg-warning/15" : "bg-success/10"
         )}
       >
         <span className="flex items-center gap-2 text-sm font-medium">
