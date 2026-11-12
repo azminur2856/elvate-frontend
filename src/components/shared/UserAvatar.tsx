@@ -15,23 +15,20 @@ export type UserAvatarSize = keyof typeof SIZES;
 
 /**
  * A person's photo (FE-28): `avatarUrl` is the API path (BE-28), loaded
- * through the proxy; initials when there is none or it fails to load.
- * `legacySrc` keeps today's picture until the API sends `avatarUrl`.
+ * through the same-origin proxy; initials when there is none or it fails to load.
  */
 export function UserAvatar({
   name,
   avatarUrl,
-  legacySrc,
   size = "sm",
   className,
 }: {
   name: string | null | undefined;
-  avatarUrl?: string | null;
-  legacySrc?: string;
+  avatarUrl: string | null | undefined;
   size?: UserAvatarSize;
   className?: string;
 }) {
-  const src = avatarUrl !== undefined ? mediaSrc(avatarUrl) : legacySrc;
+  const src = mediaSrc(avatarUrl);
   return (
     <Avatar className={cn(SIZES[size], className)}>
       {src ? <AvatarImage src={src} alt="" className="object-cover" /> : null}
