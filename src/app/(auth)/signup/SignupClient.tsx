@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
+import { NAME_MAX_LENGTH } from "@/lib/constants";
 import { getErrorMessage } from "@/lib/errors";
 import { PASSWORD_HINT, PASSWORD_MIN_LENGTH, passwordProblem } from "@/lib/password";
 import { AuthCard } from "@/components/auth/AuthCard";
@@ -124,6 +125,7 @@ export default function SignupClient() {
               <Input
                 name="firstName"
                 autoComplete="given-name"
+                maxLength={NAME_MAX_LENGTH}
                 value={form.firstName}
                 onChange={handleChange}
                 required
@@ -133,6 +135,7 @@ export default function SignupClient() {
               <Input
                 name="lastName"
                 autoComplete="family-name"
+                maxLength={NAME_MAX_LENGTH}
                 value={form.lastName}
                 onChange={handleChange}
               />

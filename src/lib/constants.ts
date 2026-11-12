@@ -2,3 +2,6 @@
 // path handled by the rewrite in next.config.ts, which keeps the backend's
 // `session` cookie first-party so middleware.ts can read it.
 export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "/api/backend";
+
+/** First and last name are each at most 50 characters (backend SEC-15). */
+export const NAME_MAX_LENGTH = 50;

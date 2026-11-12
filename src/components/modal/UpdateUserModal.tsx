@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import api from "@/lib/authAxios";
+import { NAME_MAX_LENGTH } from "@/lib/constants";
 import { getErrorMessage } from "@/lib/errors";
 import {
   Dialog,
@@ -84,6 +85,7 @@ export default function UpdateUserModal({
             <Input
               name="firstName"
               autoComplete="given-name"
+              maxLength={NAME_MAX_LENGTH}
               value={form.firstName || ""}
               onChange={handleChange}
               required
@@ -93,6 +95,7 @@ export default function UpdateUserModal({
             <Input
               name="lastName"
               autoComplete="family-name"
+              maxLength={NAME_MAX_LENGTH}
               value={form.lastName || ""}
               onChange={handleChange}
             />
