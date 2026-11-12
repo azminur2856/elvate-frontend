@@ -41,9 +41,11 @@ const SHOP_LINKS: NavLink[] = [
 
 const ADMIN_SECTIONS: NavGroup["sections"] = [
   {
-    label: "Users",
+    label: "Site & users",
     items: [
       { label: "Dashboard", href: "/admin/dashboard" },
+      // ADMIN only: not in STAFF_ADMIN_PATHS, so middleware sends STAFF to /403.
+      { label: "Settings", href: "/admin/settings" },
       { label: "View users", href: "/admin/users/view" },
       { label: "Manage users", href: "/admin/users/manage" },
       { label: "User stats", href: "/admin/users/stats" },
