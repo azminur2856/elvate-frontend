@@ -56,11 +56,16 @@ const nextConfig: NextConfig = {
       /\/+$/,
       ""
     );
+    // Shop photos (BE-28 / FE-28): the API sends `/img/<path>` and this app
+    // serves it from the image CDN, so its address never reaches the browser.
+    // Server-only env; without it /img is simply not served.
+    const images = process.env.IMAGEKIT_URL_ENDPOINT?.replace(/\/+$/, "");
     return [
       {
         source: "/api/backend/:path*",
         destination: `${backend}/:path*`,
       },
+      ...(images ? [{ source: "/img/:path*", destination: `${images}/:path*` }] : []),
     ];
   },
   // Old URLs that moved. `&` in a path is fragile (shells, analytics, some
