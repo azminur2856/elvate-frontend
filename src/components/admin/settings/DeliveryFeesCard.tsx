@@ -135,7 +135,8 @@ export function DeliveryFeesCard({ onSaved }: { onSaved?: () => void }) {
                     className="tabular-nums"
                     value={form[f.key]}
                     onChange={(e) => change(f.key, e.target.value)}
-                    disabled={saving}
+                    // Read-only, not disabled: a disabled field drops the focus after saving with Enter.
+                    readOnly={saving}
                   />
                 </FormField>
               ))}
