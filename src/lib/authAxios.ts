@@ -28,6 +28,13 @@ function refreshSession(): Promise<void> {
   return refreshInFlight;
 }
 
+/** The refresh 401 the backend sends when another tab won the race (SEC-21). */
+function isJustRefreshed(err: unknown): boolean {
+  if (!axios.isAxiosError(err) || err.response?.status !== 401) return false;
+  const message = (err.response.data as { message?: unknown } | undefined)?.message;
+  return typeof message === "string" && message.includes("just refreshed");
+}
+
 // Response interceptor to handle 401 and refresh logic
 api.interceptors.response.use(
   (response: AxiosResponse) => response,
@@ -51,6 +58,9 @@ api.interceptors.response.use(
         // Retry the original request (cookie has been renewed)
         return api(originalRequest);
       } catch (refreshError) {
+        // SEC-21: another tab refreshed a moment ago and this browser already
+        // holds the new cookie, so just retry (once: `_retry` is already set).
+        if (isJustRefreshed(refreshError)) return api(originalRequest);
         // Refresh failed: the backend has cleared the session cookie, so the
         // middleware will now let /login render instead of bouncing to "/".
         if (
