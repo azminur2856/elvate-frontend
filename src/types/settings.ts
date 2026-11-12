@@ -1,13 +1,15 @@
 /**
- * Admin feature switches (API-CONTRACT.md → "Admin settings", BE-25 / FE-25).
+ * Admin feature switches (API-CONTRACT.md → "Admin settings", BE-25 / FE-25,
+ * and the face login switch, BE-27 / FE-27).
  */
 
 /** `GET /settings/public` (no login needed). */
 export type PublicSettings = {
   smsOtpEnabled: boolean;
+  faceLoginEnabled: boolean;
 };
 
-export type AdminSettingKey = "sms_otp";
+export type AdminSettingKey = "sms_otp" | "face_login";
 
 /** A row of `GET /admin/settings`; `PATCH /admin/settings/:key` returns the same shape. */
 export type AdminSetting = {
@@ -24,3 +26,6 @@ export type AdminSetting = {
 
 /** The 403 message the SMS routes send while `sms_otp` is off. */
 export const SMS_TURNED_OFF_MESSAGE = "SMS verification is turned off";
+
+/** The 403 message face setup and face login send while `face_login` is off. */
+export const FACE_LOGIN_TURNED_OFF_MESSAGE = "Face login is turned off";
