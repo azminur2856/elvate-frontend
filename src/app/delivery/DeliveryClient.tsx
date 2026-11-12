@@ -47,12 +47,23 @@ async function copy(text: string) {
   }
 }
 
+/** What the cash strip says: still to collect, collected, nothing (returns) or paid online. */
+function cashLine(order: DeliveryOrder): { label: string; amount: number } {
+  if (order.codDue > 0) return { label: "Collect in cash", amount: order.codDue };
+  if (order.status === "RETURN_REQUESTED" || order.status === "RETURNED" || order.status === "CANCELLED") {
+    return { label: "Nothing to collect", amount: 0 };
+  }
+  if (order.status === "DELIVERED" && order.paymentMethod === "COD") return { label: "Cash collected", amount: order.total };
+  return { label: "Already paid", amount: 0 };
+}
+
 function OrderCard({ order, onAction }: { order: DeliveryOrder; onAction: (a: Action) => void }) {
   const [open, setOpen] = useState(false);
   const [detail, setDetail] = useState<OrderDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const address = addressText(order);
   const phone = order.customerPhone ?? order.shippingAddress.phone;
+  const cash = cashLine(order);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
   const toggle = async () => {
@@ -124,9 +135,9 @@ function OrderCard({ order, onAction }: { order: DeliveryOrder; onAction: (a: Ac
       >
         <span className="flex items-center gap-2 text-sm font-medium">
           <Banknote aria-hidden="true" className="size-4" />
-          {order.codDue > 0 ? "Collect in cash" : order.status === "RETURN_REQUESTED" ? "Nothing to collect" : "Already paid"}
+          {cash.label}
         </span>
-        <span className="font-heading text-lg font-bold tabular-nums">{order.codDue > 0 ? formatBDT(order.codDue) : "৳0"}</span>
+        <span className="font-heading text-lg font-bold tabular-nums">{cash.amount > 0 ? formatBDT(cash.amount) : "৳0"}</span>
       </div>
 
       <div>
