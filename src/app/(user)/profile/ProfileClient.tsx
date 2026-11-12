@@ -32,9 +32,8 @@ type UserProfile = {
   isActive: boolean;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
-  profileImage?: string;
   /** BE-28: our own path to the picture, `null` when there is none. */
-  avatarUrl?: string | null;
+  avatarUrl: string | null;
   isFaceVerified?: boolean;
   /** False for Google-only accounts. */
   hasPassword?: boolean;
@@ -62,15 +61,9 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 const NA = <span className="text-muted-foreground">Not set</span>;
 
-/** An uploaded picture, not the default one (before BE-28 the default is "profile.png"). */
-function hasOwnPicture(user: UserProfile): boolean {
-  if (user.avatarUrl !== undefined) return user.avatarUrl !== null;
-  return Boolean(user.profileImage) && user.profileImage !== "profile.png";
-}
 
 export default function ProfileClient() {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [imgSrc, setImgSrc] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
@@ -103,22 +96,6 @@ export default function ProfileClient() {
     };
   }, []);
 
-  // Until BE-28 sends `avatarUrl`, the picture is a blob behind auth; keep it as an object URL.
-  useEffect(() => {
-    if (!user || user.avatarUrl !== undefined) return;
-    let url: string | undefined;
-    api
-      .get("/users/profileImage", { responseType: "blob" })
-      .then((res) => {
-        url = URL.createObjectURL(res.data);
-        setImgSrc(url);
-      })
-      .catch(() => setImgSrc(undefined));
-    return () => {
-      if (url) URL.revokeObjectURL(url);
-    };
-  }, [user]);
-
   if (loading) {
     return (
       <PageShell width="sm" title={<span className="sr-only">Profile</span>} center>
@@ -147,7 +124,7 @@ export default function ProfileClient() {
       <Card className="w-full">
         <CardContent className="flex flex-col items-center pt-6">
           <div className="relative">
-            <UserAvatar name={name} avatarUrl={user.avatarUrl} legacySrc={imgSrc} size="md" className="border-2 border-primary" />
+            <UserAvatar name={name} avatarUrl={user.avatarUrl} size="md" className="border-2 border-primary" />
             <Button
               size="icon-sm"
               className="absolute -bottom-1 -right-1 rounded-full shadow"
@@ -259,7 +236,7 @@ export default function ProfileClient() {
         open={faceModalOpen}
         onClose={() => setFaceModalOpen(false)}
         onVerified={() => void refetchUser()}
-        hasPicture={hasOwnPicture(user)}
+        hasPicture={user.avatarUrl !== null}
         hasPassword={user.hasPassword !== false}
         onAddPicture={() => {
           setFaceModalOpen(false);
