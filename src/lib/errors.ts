@@ -30,6 +30,16 @@ export function getErrorMessage(
   return fallback;
 }
 
+/**
+ * Minutes until a sign-in lock ends, from a 429 `{ retryAfterSeconds }`
+ * (password and face login, SEC-04/06). Null when not a lock reply.
+ */
+export function retryAfterMinutes(err: unknown): number | null {
+  if (!isAxiosError(err) || err.response?.status !== 429) return null;
+  const seconds = (err.response.data as { retryAfterSeconds?: unknown } | undefined)?.retryAfterSeconds;
+  return typeof seconds === "number" && seconds > 0 ? Math.max(1, Math.ceil(seconds / 60)) : null;
+}
+
 /** True when the backend answered 403 (used to open the subscription dialog). */
 export function isForbidden(err: unknown): boolean {
   return isAxiosError(err) && err.response?.status === 403;
