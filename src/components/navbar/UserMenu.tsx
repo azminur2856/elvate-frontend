@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LogOut } from "lucide-react";
 import type { SessionUser } from "@/lib/session";
 import { useLogout } from "@/hooks/useLogout";
+import { initials } from "@/lib/media";
 import { getUserMenuItems, type NavRole } from "@/components/navbar/nav-config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -26,15 +27,7 @@ export function profileImageUrl(user: SessionUser): string | undefined {
   return `${IMAGEKIT}/user_profile_image/user_${user.id}/${user.profileImage}`;
 }
 
-export function initials(name: string | undefined): string {
-  if (!name) return "?";
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]!.toUpperCase())
-    .join("");
-}
+export { initials } from "@/lib/media";
 
 export function UserMenu({
   user,
