@@ -89,7 +89,7 @@ export default function ActivityStatsClient() {
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid items-start gap-6 lg:grid-cols-2">
             <section className="grid gap-3">
               <h2 className="text-lg font-semibold">Breakdown by type</h2>
               <DataTable columns={typeColumns} rows={typeRows} rowKey={(r) => r.type} emptyMessage="No activity yet." caption="Activity by type" />
