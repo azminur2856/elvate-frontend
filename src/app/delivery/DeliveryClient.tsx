@@ -79,7 +79,13 @@ function OrderCard({ order, onAction }: { order: DeliveryOrder; onAction: (a: Ac
             {order.itemCount} {order.itemCount === 1 ? "item" : "items"} · <LocalTime value={order.createdAt} />
           </p>
         </div>
-        <OrderStatusBadge status={order.status} />
+        <div className="flex flex-wrap justify-end gap-1.5">
+          {/* BE-29: an admin finished this order for the delivery man. */}
+          {order.correctedByAdmin || detail?.statusHistory.some((h) => h.correction) ? (
+            <Badge variant="warning">Corrected by admin</Badge>
+          ) : null}
+          <OrderStatusBadge status={order.status} />
+        </div>
       </header>
 
       <div className="grid gap-1">
