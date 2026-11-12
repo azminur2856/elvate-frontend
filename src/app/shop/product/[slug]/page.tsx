@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PackageCheck, ShieldCheck, Truck } from "lucide-react";
+import { Banknote, PackageCheck, ShieldCheck } from "lucide-react";
 import { getProduct, getProductReviews, getRelatedProducts } from "@/lib/catalog";
 import { categoryHref, productHref } from "@/lib/catalog-url";
 import type { ProductDetail } from "@/types/commerce";
@@ -9,6 +9,7 @@ import { Breadcrumbs } from "@/components/shop/Breadcrumbs";
 import { ProductSection } from "@/components/shop/ProductSection";
 import { RatingStars } from "@/components/shop/RatingStars";
 import { ShopUnavailable } from "@/components/shop/ShopUnavailable";
+import { FreeDeliveryPerk } from "@/components/shop/product/FreeDeliveryPerk";
 import { ProductGallery } from "@/components/shop/product/ProductGallery";
 import { ProductPurchase } from "@/components/shop/product/ProductPurchase";
 import { ProductReviews } from "@/components/shop/reviews/ProductReviews";
@@ -69,7 +70,7 @@ function productJsonLd(p: ProductDetail) {
 }
 
 const PERKS = [
-  { icon: Truck, text: "Cash on delivery available" },
+  { icon: Banknote, text: "Cash on delivery available" },
   { icon: ShieldCheck, text: "Secure card payment with Stripe" },
   { icon: PackageCheck, text: "Track your order at every step" },
 ];
@@ -132,6 +133,7 @@ export default async function ProductPage({ params }: Props) {
             <ProductPurchase product={p} />
 
             <ul className="grid gap-2 rounded-xl border p-4 text-sm">
+              <FreeDeliveryPerk />
               {PERKS.map(({ icon: Icon, text }) => (
                 <li key={text} className="flex items-center gap-2 text-muted-foreground">
                   <Icon aria-hidden="true" className="size-4 text-brand" />
