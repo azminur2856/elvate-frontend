@@ -228,7 +228,13 @@ export default function DeliveriesClient({ initialView, initialToday }: Deliveri
     {
       key: "deliveryMan",
       header: "Delivery man",
-      cell: (o) => o.deliveryMan?.name ?? <Badge variant="warning">Not assigned</Badge>,
+      cell: (o) =>
+        o.deliveryMan?.name ??
+        (o.status === "PROCESSING" || o.status === "SHIPPED" ? (
+          <Badge variant="warning">Not assigned</Badge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )),
     },
     { key: "status", header: "Status", cell: (o) => <OrderStatusBadge status={o.status} /> },
     {
