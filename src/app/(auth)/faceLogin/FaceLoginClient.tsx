@@ -9,7 +9,7 @@ import { getErrorMessage, retryAfterMinutes } from "@/lib/errors";
 import { didAction, isFrontal, type FaceMetrics } from "@/lib/face-metrics";
 import { afterLoginTarget, safeNextPath } from "@/lib/redirect";
 import { canvasToJpeg, captureFrame, useFaceAlignment, type FaceFrame } from "@/hooks/useFaceAlignment";
-import type { FaceAction, FaceChallenge } from "@/types/face";
+import { FACE_FIRST_TIME_HINT, FACE_LOGIN_FAILED_MESSAGE, type FaceAction, type FaceChallenge } from "@/types/face";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { FormField } from "@/components/forms/FormField";
 import { FormMessage } from "@/components/forms/FormMessage";
@@ -161,10 +161,8 @@ export default function FaceLoginClient() {
           }
           return;
         }
-        showFailure(
-          err,
-          "Face login failed. Make sure only your face is in good light and follow the prompt, or sign in with your password."
-        );
+        // Every failure gets the server's one message (BE-26).
+        showFailure(err, FACE_LOGIN_FAILED_MESSAGE);
         setPhase("email");
       }
     },
@@ -294,10 +292,6 @@ export default function FaceLoginClient() {
     >
       {phase === "email" ? (
         <form onSubmit={submitEmail} className="grid gap-4" noValidate>
-          <FormMessage variant="info">
-            Face login was updated. If you used it before, log in with your password once and set it up again
-            under Profile.
-          </FormMessage>
           {message ? <FormMessage variant={message.type}>{message.text}</FormMessage> : null}
           <FormField id="email" label="Email" error={emailError} required>
             <Input
@@ -313,6 +307,7 @@ export default function FaceLoginClient() {
             <ScanFace aria-hidden="true" />
             Continue
           </Button>
+          <p className="text-center text-sm text-muted-foreground">{FACE_FIRST_TIME_HINT}</p>
         </form>
       ) : (
         <div className="grid gap-4">

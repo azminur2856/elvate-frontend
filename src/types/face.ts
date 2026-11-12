@@ -15,3 +15,13 @@ export type FaceChallenge = {
 
 /** `POST /users/face-reference` (face setup) → 201. */
 export type FaceReferenceResult = { faceLoginEnabled: boolean };
+
+/**
+ * BE-26: the one answer to every failed face login (also "not set up yet"),
+ * used when the server's text is missing.
+ */
+export const FACE_LOGIN_FAILED_MESSAGE =
+  "We couldn't sign you in with your face. If you haven't set up face login yet, sign in with your password and set it up from your profile. Otherwise, make sure your face is clearly visible in good light and follow the on-screen prompt.";
+
+/** FE-26: permanent hint under the face login button. */
+export const FACE_FIRST_TIME_HINT = "First time? Sign in with your password and set up face login from your profile.";

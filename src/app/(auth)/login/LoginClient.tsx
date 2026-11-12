@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import { BACKEND_URL } from "@/lib/constants";
 import { getErrorMessage } from "@/lib/errors";
 import { afterLoginTarget, LOGIN_NEXT_KEY, safeNextPath } from "@/lib/redirect";
+import { FACE_FIRST_TIME_HINT } from "@/types/face";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { GoogleIcon } from "@/components/auth/GoogleIcon";
 import { FormField } from "@/components/forms/FormField";
@@ -145,6 +146,7 @@ export default function LoginClient() {
             Log in with your face
           </Link>
         </Button>
+        <p className="text-center text-sm text-muted-foreground">{FACE_FIRST_TIME_HINT}</p>
       </form>
     </AuthCard>
   );
