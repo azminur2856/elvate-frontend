@@ -16,16 +16,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const IMAGEKIT = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT;
-
-export function profileImageUrl(user: SessionUser): string | undefined {
-  if (!IMAGEKIT || !user.profileImage) return undefined;
-  if (user.profileImage === "profile.png") {
-    return `${IMAGEKIT}/user_profile_image/${user.profileImage}`;
-  }
-  return `${IMAGEKIT}/user_profile_image/user_${user.id}/${user.profileImage}`;
-}
-
 export { initials } from "@/lib/media";
 
 export function UserMenu({
@@ -47,7 +37,7 @@ export function UserMenu({
           className="rounded-full"
           aria-label={`Account menu for ${user.name}`}
         >
-          <UserAvatar name={user.name} avatarUrl={user.avatarUrl} legacySrc={profileImageUrl(user)} size="xs" />
+          <UserAvatar name={user.name} avatarUrl={user.avatarUrl ?? null} size="xs" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

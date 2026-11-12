@@ -11,7 +11,6 @@ type User = {
   name: string;
   role: Role;
   email: string;
-  profileImage: string;
 };
 
 interface HeroSectionProps {

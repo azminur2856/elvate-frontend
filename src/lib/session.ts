@@ -9,7 +9,8 @@ export type Session = {
     name: string;
     role: Role;
     email: string;
-    profileImage: string;
+    /** Stored file name; never shown (pictures come from `avatarUrl`). */
+    profileImage?: string;
     /** BE-28: `/media/me/avatar?size=xs&v=…`, or null without a picture. */
     avatarUrl?: string | null;
   };
@@ -27,8 +28,8 @@ export type SessionUser = Session["user"];
  */
 export function toSessionUser(session: Session | null): SessionUser | null {
   if (!session?.user) return null;
-  const { id, name, role, email, profileImage, avatarUrl } = session.user;
-  return { id, name, role, email, profileImage, avatarUrl };
+  const { id, name, role, email, avatarUrl } = session.user;
+  return { id, name, role, email, avatarUrl };
 }
 
 export async function getSession() {
