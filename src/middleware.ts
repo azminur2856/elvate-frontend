@@ -75,12 +75,9 @@ export default async function middleware(req: NextRequest) {
     }
   }
 
-  // Delivery area: delivery men, and admins may view it
-  if (
-    startsWithSegment(pathname, "/delivery") &&
-    role !== Role.DELIVERY_MAN &&
-    role !== Role.ADMIN
-  ) {
+  // Delivery area: delivery men only. Admins and staff manage deliveries
+  // under /admin/deliveries but never perform them (FE-29 / BE-29).
+  if (startsWithSegment(pathname, "/delivery") && role !== Role.DELIVERY_MAN) {
     return NextResponse.redirect(new URL("/403", req.nextUrl));
   }
 
@@ -104,7 +101,7 @@ export const config = {
     "/orders/:path*",
     // Only protect subpaths of /digitalServices, not the base path itself
     "/digitalServices/(.+)",
-    // DELIVERY_MAN (or ADMIN)
+    // DELIVERY_MAN only
     "/delivery/:path*",
     // Admin-only routes
     "/admin/:path*",
