@@ -1,3 +1,4 @@
+import "server-only";
 import { cookies } from "next/headers";
 import { decryptSessionCookie } from "./jose-cookie";
 import { Role } from "./enums/role.enum";
