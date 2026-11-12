@@ -1,7 +1,7 @@
 import HeroSectionClient from "./HeroSectionClient";
-import { getSession } from "@/lib/session";
+import { getSession, toSessionUser } from "@/lib/session";
 
 export default async function Home() {
-  const session = await getSession();
-  return <HeroSectionClient user={session?.user} />;
+  const user = toSessionUser(await getSession());
+  return <HeroSectionClient user={user} />;
 }
