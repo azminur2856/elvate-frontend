@@ -19,7 +19,11 @@ export function getErrorMessage(
     if (Array.isArray(message) && message.length) return message.join(", ");
     if (typeof message === "string" && message) return message;
     if (typeof data?.error === "string" && data.error) return data.error;
-    return err.message || fallback;
+    // No answer at all: offline, or the API is down / restarting.
+    if (!err.response) return "Can't reach the server. Check your connection and try again.";
+    // An answer without a message (e.g. the proxy's plain 500): axios' own
+    // text ("Request failed with status code 500") means nothing to users.
+    return fallback;
   }
   if (err instanceof Error && err.message) return err.message;
   if (typeof err === "string" && err) return err;
