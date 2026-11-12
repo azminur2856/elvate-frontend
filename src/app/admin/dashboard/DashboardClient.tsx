@@ -19,8 +19,9 @@ import {
 import Link from "next/link";
 import { Clock } from "lucide-react";
 import api from "@/lib/authAxios";
+import { deliveriesHref, type DeliveryView } from "@/lib/deliveries";
 import { formatBDT, formatMoney, PLAN_LABELS } from "@/lib/format";
-import type { OrderStats } from "@/types/commerce";
+import type { DeliveriesSummary, OrderStats } from "@/types/commerce";
 import { Button } from "@/components/ui/button";
 import { PageShell } from "@/components/shared/PageShell";
 import { FormMessage } from "@/components/forms/FormMessage";
@@ -53,6 +54,15 @@ export default function DashboardClient() {
   const [failed, setFailed] = useState(false);
   // Shop KPIs load separately: the dashboard still works while the order API is unavailable.
   const [orderStats, setOrderStats] = useState<OrderStats | null>(null);
+  // Delivery numbers (BE-29); the section stays hidden while they are unavailable.
+  const [deliveries, setDeliveries] = useState<DeliveriesSummary | null>(null);
+
+  useEffect(() => {
+    api
+      .get<DeliveriesSummary>("/admin/deliveries/summary")
+      .then((res) => setDeliveries(res.data))
+      .catch(() => setDeliveries(null));
+  }, []);
 
   useEffect(() => {
     api
@@ -140,6 +150,36 @@ export default function DashboardClient() {
                   }
                 />
               </div>
+            </section>
+          ) : null}
+          {deliveries ? (
+            <section aria-labelledby="delivery-kpis" className="grid gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 id="delivery-kpis" className="text-lg font-semibold">
+                  Deliveries now
+                </h2>
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/admin/deliveries">Open deliveries</Link>
+                </Button>
+              </div>
+              <ul className="grid gap-4 sm:grid-cols-3">
+                {(
+                  [
+                    ["Waiting for a delivery man", deliveries.waitingForDeliveryMan, "waiting", 4],
+                    ["Out for delivery", deliveries.outForDelivery, "out", 3],
+                    ["Return requests", deliveries.returnRequests, "returns", 5],
+                  ] as [string, number, DeliveryView, 3 | 4 | 5][]
+                ).map(([label, value, view, accent]) => (
+                  <li key={view}>
+                    <Link
+                      href={deliveriesHref(view)}
+                      className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <StatCard label={label} value={value} accent={accent} className="h-full transition-colors hover:bg-muted/50" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </section>
           ) : null}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
