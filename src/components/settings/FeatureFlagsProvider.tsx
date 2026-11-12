@@ -27,9 +27,7 @@ export function FeatureFlagsProvider({ children }: { children: React.ReactNode }
       const res = await api.get<PublicSettings>("/settings/public");
       setFlags({
         smsOtpEnabled: res.data?.smsOtpEnabled === true,
-        // Until BE-27 the answer has no `faceLoginEnabled`: face login works as
-        // before. Once the field is there, only `true` counts as on.
-        faceLoginEnabled: res.data?.faceLoginEnabled !== false,
+        faceLoginEnabled: res.data?.faceLoginEnabled === true,
       });
     } catch {
       setFlags(ALL_OFF);
