@@ -53,7 +53,10 @@ function cashLine(order: DeliveryOrder): { label: string; amount: number } {
   if (order.status === "RETURN_REQUESTED" || order.status === "RETURNED" || order.status === "CANCELLED") {
     return { label: "Nothing to collect", amount: 0 };
   }
-  if (order.status === "DELIVERED" && order.paymentMethod === "COD") return { label: "Cash collected", amount: order.total };
+  if (order.status === "DELIVERED" && order.paymentMethod === "COD") {
+    // An admin correction can record a delivery without the cash (still unpaid).
+    return { label: order.paymentStatus === "PAID" ? "Cash collected" : "Cash not collected", amount: order.total };
+  }
   return { label: "Already paid", amount: 0 };
 }
 
