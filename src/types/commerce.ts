@@ -64,7 +64,7 @@ export type Address = {
   isDefault: boolean; isInsideDhaka: boolean;            // derived from city, drives shipping fee
 };
 
-export type OrderStatus = "PENDING" | "CONFIRMED" | "PROCESSING" | "SHIPPED" | "OUT_FOR_DELIVERY" | "DELIVERED" | "CANCELLED" | "RETURNED";
+export type OrderStatus = "PENDING" | "CONFIRMED" | "PROCESSING" | "SHIPPED" | "OUT_FOR_DELIVERY" | "DELIVERED" | "CANCELLED" | "RETURN_REQUESTED" | "RETURNED";
 export type PaymentStatus = "UNPAID" | "PAID" | "REFUNDED" | "FAILED";
 export type PaymentMethod = "COD" | "STRIPE";
 

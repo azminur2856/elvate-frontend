@@ -25,6 +25,7 @@ export const STATUS_STYLE: Record<OrderStatus, { variant: Variant; icon: LucideI
   OUT_FOR_DELIVERY: { variant: "brand", icon: Truck },
   DELIVERED: { variant: "success", icon: PackageCheck },
   CANCELLED: { variant: "destructive", icon: Ban },
+  RETURN_REQUESTED: { variant: "warning", icon: Undo2 },
   RETURNED: { variant: "secondary", icon: Undo2 },
 };
 

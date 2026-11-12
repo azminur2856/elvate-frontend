@@ -8,6 +8,7 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   OUT_FOR_DELIVERY: "Out for delivery",
   DELIVERED: "Delivered",
   CANCELLED: "Cancelled",
+  RETURN_REQUESTED: "Return requested",
   RETURNED: "Returned",
 };
 
@@ -21,7 +22,7 @@ export const ORDER_FLOW: OrderStatus[] = [
   "DELIVERED",
 ];
 
-export const ALL_ORDER_STATUSES: OrderStatus[] = [...ORDER_FLOW, "CANCELLED", "RETURNED"];
+export const ALL_ORDER_STATUSES: OrderStatus[] = [...ORDER_FLOW, "CANCELLED", "RETURN_REQUESTED", "RETURNED"];
 
 export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   UNPAID: "Unpaid",
@@ -44,6 +45,7 @@ export const ORDER_STATUS_HINTS: Record<OrderStatus, string> = {
   OUT_FOR_DELIVERY: "Your parcel is on its way to you today.",
   DELIVERED: "Your order was delivered.",
   CANCELLED: "This order was cancelled.",
+  RETURN_REQUESTED: "The delivery could not be completed. The parcel is on its way back to us.",
   RETURNED: "This order was returned.",
 };
 

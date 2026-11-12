@@ -33,6 +33,7 @@ const ACTION_LABELS: Record<OrderStatus, string> = {
   OUT_FOR_DELIVERY: "Out for delivery",
   DELIVERED: "Mark delivered",
   CANCELLED: "Cancel order",
+  RETURN_REQUESTED: "Request return",
   RETURNED: "Mark returned",
 };
 const DESTRUCTIVE: OrderStatus[] = ["CANCELLED", "RETURNED"];

@@ -9,8 +9,8 @@ type HistoryEntry = OrderDetail["statusHistory"][number];
 
 /**
  * Status timeline. Shows every step of the normal flow (done / current /
- * upcoming) with the time it happened; cancelled or returned orders show
- * the actual history instead.
+ * upcoming) with the time it happened; cancelled, returning or returned
+ * orders show the actual history instead.
  */
 export function OrderTimeline({
   status,
@@ -22,7 +22,7 @@ export function OrderTimeline({
   className?: string;
 }) {
   const sorted = [...history].sort((a, b) => a.at.localeCompare(b.at));
-  const offFlow = status === "CANCELLED" || status === "RETURNED";
+  const offFlow = status === "CANCELLED" || status === "RETURN_REQUESTED" || status === "RETURNED";
   const currentIndex = ORDER_FLOW.indexOf(status);
 
   type Step = { status: OrderStatus; entry: HistoryEntry | undefined; state: "done" | "current" | "upcoming" };
