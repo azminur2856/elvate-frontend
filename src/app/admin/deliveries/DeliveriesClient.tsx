@@ -336,180 +336,178 @@ export default function DeliveriesClient({ initialView, initialToday }: Deliveri
         )}
       </section>
 
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
-        <section aria-label="Orders to deliver" className="grid min-w-0 gap-4">
-          <div className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-5">
-            <div className="grid gap-2">
-              <Label htmlFor="delivery-view">Status</Label>
-              <Select value={view} onValueChange={(v) => applyView(v as DeliveryView)}>
-                <SelectTrigger id="delivery-view" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(DELIVERY_VIEWS) as DeliveryView[]).map((k) => (
-                    <SelectItem key={k} value={k}>
-                      {DELIVERY_VIEWS[k].label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg">Delivery men</CardTitle>
+          <CardDescription>Active orders, out now, delivered and cash collected today.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {summaryState === "loading" ? (
+            <div role="status" aria-label="Loading delivery men" className="grid gap-3">
+              <Skeleton className="h-14 rounded-lg" />
+              <Skeleton className="h-14 rounded-lg" />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="delivery-man-filter">Delivery man</Label>
-              <Select
-                value={deliveryManId}
-                onValueChange={(v) => {
-                  setDeliveryManId(v);
-                  setPage(1);
-                }}
-              >
-                <SelectTrigger id="delivery-man-filter" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ANY}>Anyone</SelectItem>
-                  {deliveryMen.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>
-                      {d.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <FormField id="delivery-from" label="From">
-              <Input
-                type="date"
-                value={from}
-                max={to || undefined}
-                onChange={(e) => {
-                  setFrom(e.target.value);
-                  setPage(1);
-                }}
-              />
-            </FormField>
-            <FormField id="delivery-to" label="To" error={rangeError}>
-              <Input
-                type="date"
-                value={to}
-                min={from || undefined}
-                onChange={(e) => {
-                  setTo(e.target.value);
-                  setPage(1);
-                }}
-              />
-            </FormField>
-            <div className="grid gap-2">
-              <Label htmlFor="delivery-search">Search</Label>
-              <div className="relative">
-                <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="delivery-search"
-                  type="search"
-                  value={q}
-                  onChange={(e) => {
-                    setQ(e.target.value);
-                    setPage(1);
-                  }}
-                  placeholder="Order, e-mail or name"
-                  className="pl-9"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-muted-foreground" aria-live="polite">
-              {data ? `${data.total} ${data.total === 1 ? "order" : "orders"}` : loading ? "Loading…" : ""}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {filtered ? (
-                <Button variant="ghost" size="sm" onClick={clear}>
-                  <FilterX aria-hidden="true" />
-                  Clear filters
-                </Button>
-              ) : null}
-              <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
-                <RefreshCw aria-hidden="true" />
-                Refresh
-              </Button>
-            </div>
-          </div>
-
-          {error ? (
-            <div className="grid justify-items-start gap-3">
-              <FormMessage variant="error">{error}</FormMessage>
-              <Button variant="outline" size="sm" onClick={refresh}>
-                Try again
-              </Button>
-            </div>
-          ) : (
-            <DataTable
-              columns={columns}
-              rows={data?.items ?? []}
-              rowKey={(o) => o.id}
-              loading={loading && !data}
-              loadingLabel="Loading deliveries"
-              emptyMessage={filtered ? "No orders match these filters." : "No orders to deliver right now."}
-              caption="Orders being delivered"
-            />
-          )}
-          {data && data.totalPages > 1 ? (
-            <PaginationControls page={page} totalPages={data.totalPages} onPageChange={setPage} />
-          ) : null}
-        </section>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Delivery men</CardTitle>
-            <CardDescription>Active orders, out now, delivered and cash collected today.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {summaryState === "loading" ? (
-              <div role="status" aria-label="Loading delivery men" className="grid gap-3">
-                <Skeleton className="h-14 rounded-lg" />
-                <Skeleton className="h-14 rounded-lg" />
-              </div>
-            ) : summary && summary.deliveryMen.length ? (
-              <ul className="grid gap-3">
-                {summary.deliveryMen.map((d) => (
-                  <li key={d.id} className="grid gap-1 rounded-lg border p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium">{d.name}</span>
-                      {d.phone ? (
-                        <a href={`tel:${d.phone}`} className="text-sm text-link hover:underline">
-                          {d.phone}
-                        </a>
-                      ) : null}
+          ) : summary && summary.deliveryMen.length ? (
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {summary.deliveryMen.map((d) => (
+                <li key={d.id} className="grid gap-1 rounded-lg border p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-medium">{d.name}</span>
+                    {d.phone ? (
+                      <a href={`tel:${d.phone}`} className="text-sm text-link hover:underline">
+                        {d.phone}
+                      </a>
+                    ) : null}
+                  </div>
+                  <dl className="grid grid-cols-2 gap-x-3 text-sm">
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-muted-foreground">Active</dt>
+                      <dd className="tabular-nums">{d.active}</dd>
                     </div>
-                    <dl className="grid grid-cols-2 gap-x-3 text-sm">
-                      <div className="flex justify-between gap-2">
-                        <dt className="text-muted-foreground">Active</dt>
-                        <dd className="tabular-nums">{d.active}</dd>
-                      </div>
-                      <div className="flex justify-between gap-2">
-                        <dt className="text-muted-foreground">Out now</dt>
-                        <dd className="tabular-nums">{d.outNow}</dd>
-                      </div>
-                      <div className="flex justify-between gap-2">
-                        <dt className="text-muted-foreground">Delivered</dt>
-                        <dd className="tabular-nums">{d.deliveredToday}</dd>
-                      </div>
-                      <div className="flex justify-between gap-2">
-                        <dt className="text-muted-foreground">Cash</dt>
-                        <dd className="tabular-nums">{formatBDT(d.cashCollectedToday)}</dd>
-                      </div>
-                    </dl>
-                  </li>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-muted-foreground">Out now</dt>
+                      <dd className="tabular-nums">{d.outNow}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-muted-foreground">Delivered</dt>
+                      <dd className="tabular-nums">{d.deliveredToday}</dd>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <dt className="text-muted-foreground">Cash</dt>
+                      <dd className="tabular-nums">{formatBDT(d.cashCollectedToday)}</dd>
+                    </div>
+                  </dl>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {summary ? "No active delivery men." : "Shown once the delivery numbers are available."}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <section aria-label="Orders to deliver" className="grid min-w-0 gap-4">
+        <div className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-2">
+            <Label htmlFor="delivery-view">Status</Label>
+            <Select value={view} onValueChange={(v) => applyView(v as DeliveryView)}>
+              <SelectTrigger id="delivery-view" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(DELIVERY_VIEWS) as DeliveryView[]).map((k) => (
+                  <SelectItem key={k} value={k}>
+                    {DELIVERY_VIEWS[k].label}
+                  </SelectItem>
                 ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                {summary ? "No active delivery men." : "Shown once the delivery numbers are available."}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="delivery-man-filter">Delivery man</Label>
+            <Select
+              value={deliveryManId}
+              onValueChange={(v) => {
+                setDeliveryManId(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger id="delivery-man-filter" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ANY}>Anyone</SelectItem>
+                {deliveryMen.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <FormField id="delivery-from" label="From">
+            <Input
+              type="date"
+              value={from}
+              max={to || undefined}
+              onChange={(e) => {
+                setFrom(e.target.value);
+                setPage(1);
+              }}
+            />
+          </FormField>
+          <FormField id="delivery-to" label="To" error={rangeError}>
+            <Input
+              type="date"
+              value={to}
+              min={from || undefined}
+              onChange={(e) => {
+                setTo(e.target.value);
+                setPage(1);
+              }}
+            />
+          </FormField>
+          <div className="grid gap-2">
+            <Label htmlFor="delivery-search">Search</Label>
+            <div className="relative">
+              <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="delivery-search"
+                type="search"
+                value={q}
+                onChange={(e) => {
+                  setQ(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Order, e-mail or name"
+                className="pl-9"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-muted-foreground" aria-live="polite">
+            {data ? `${data.total} ${data.total === 1 ? "order" : "orders"}` : loading ? "Loading…" : ""}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {filtered ? (
+              <Button variant="ghost" size="sm" onClick={clear}>
+                <FilterX aria-hidden="true" />
+                Clear filters
+              </Button>
+            ) : null}
+            <Button variant="outline" size="sm" onClick={refresh} disabled={loading}>
+              <RefreshCw aria-hidden="true" />
+              Refresh
+            </Button>
+          </div>
+        </div>
+
+        {error ? (
+          <div className="grid justify-items-start gap-3">
+            <FormMessage variant="error">{error}</FormMessage>
+            <Button variant="outline" size="sm" onClick={refresh}>
+              Try again
+            </Button>
+          </div>
+        ) : (
+          <DataTable
+            columns={columns}
+            rows={data?.items ?? []}
+            rowKey={(o) => o.id}
+            loading={loading && !data}
+            loadingLabel="Loading deliveries"
+            emptyMessage={filtered ? "No orders match these filters." : "No orders to deliver right now."}
+            caption="Orders being delivered"
+          />
+        )}
+        {data && data.totalPages > 1 ? (
+          <PaginationControls page={page} totalPages={data.totalPages} onPageChange={setPage} />
+        ) : null}
+      </section>
       <ConfirmDialog
         open={settling !== null}
         onOpenChange={(open) => {
