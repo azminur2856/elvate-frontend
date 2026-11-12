@@ -74,6 +74,10 @@ export type OrderSummary = {
   total: number; itemCount: number; firstItemImage: string | null; createdAt: string;
   customer?: { id: string; name: string; email: string; avatarUrl?: string | null };   // admin lists only; avatarUrl BE-28
   deliveryMan?: { id: string; name: string } | null;        // admin lists only
+  // Requested for FE-29 (see "Requests from frontend"); optional until the backend sends them.
+  shippingAddress?: { area: string | null; city: string };  // admin lists: where it goes
+  updatedAt?: string;                                       // admin lists: last status change
+  correctedByAdmin?: boolean;                               // delivery lists: an admin correction is in the history
 };
 
 export type OrderItem = {
@@ -89,7 +93,10 @@ export type OrderDetail = OrderSummary & {
   couponCode: string | null; notes: string | null;
   adminNotes?: string | null;            // ADMIN only
   shippingAddress: Omit<Address, "id" | "isDefault">;     // snapshot
-  statusHistory: { status: OrderStatus; note: string | null; at: string; by: { name: string; role: string } | null }[];
+  statusHistory: {
+    status: OrderStatus; note: string | null; at: string; by: { name: string; role: string } | null;
+    correction?: boolean;                // BE-29: set by an admin correction
+  }[];
   deliveryMan: { id: string; name: string; phone: string | null } | null;
   customer: { id: string; name: string; email: string; phone: string | null; avatarUrl?: string | null };
   allowedNextStatuses: OrderStatus[];    // for the caller's role; drives the UI buttons
@@ -206,6 +213,26 @@ export type DeliveryOrder = OrderSummary & {
 };
 
 /** `GET /delivery/stats` */
+/** BE-29: `GET /admin/deliveries/summary` (ADMIN · STAFF). */
+export type DeliveriesSummary = {
+  waitingForDeliveryMan: number;         // PROCESSING / SHIPPED without a delivery man
+  assignedNotPickedUp: number;           // SHIPPED with one
+  outForDelivery: number; deliveredToday: number; returnRequests: number; cashCollectedToday: number;
+  deliveryMen: {
+    id: string; name: string; phone: string | null;
+    active: number; outNow: number; deliveredToday: number; cashCollectedToday: number;
+  }[];
+};
+
+/** BE-29: `POST /admin/orders/:id/correction` (ADMIN only, order OUT_FOR_DELIVERY). */
+export type CorrectionAction = "DELIVERED" | "RETURN_REQUESTED";
+export type CorrectionReason = "DELIVERY_MAN_CONFIRMED_BY_PHONE" | "CUSTOMER_CONFIRMED" | "DELIVERY_MAN_UNAVAILABLE" | "OTHER";
+export type OrderCorrection = {
+  action: CorrectionAction; reason: CorrectionReason;
+  note: string;                          // 10–500 characters
+  cashCollected?: boolean;               // required for COD + DELIVERED
+};
+
 export type DeliveryStats = {
   assigned: number; outForDelivery: number; deliveredToday: number; deliveredTotal: number; codCollectedToday: number;
 };
