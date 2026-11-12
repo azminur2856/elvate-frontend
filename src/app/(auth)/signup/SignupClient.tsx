@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errors";
+import { PASSWORD_HINT, PASSWORD_MIN_LENGTH, passwordProblem } from "@/lib/password";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { FormField } from "@/components/forms/FormField";
 import { FormMessage } from "@/components/forms/FormMessage";
@@ -41,6 +42,7 @@ export default function SignupClient() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
 
   const set = (name: keyof FormState, value: string | boolean) =>
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -53,12 +55,15 @@ export default function SignupClient() {
     form.rePassword.length > 0 &&
     form.password !== form.rePassword;
 
+  const passwordError = form.password ? passwordProblem(form.password) : null;
+
   const canSubmit =
     form.firstName &&
     form.email &&
     form.password &&
     form.rePassword &&
     form.terms &&
+    !passwordError &&
     !mismatch;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,6 +71,12 @@ export default function SignupClient() {
     setError("");
     if (!form.terms) {
       setError("You must agree to the Terms & Conditions.");
+      return;
+    }
+    const problem = passwordProblem(form.password);
+    if (problem) {
+      setPasswordTouched(true);
+      setError(problem);
       return;
     }
     if (form.password !== form.rePassword) {
@@ -83,6 +94,7 @@ export default function SignupClient() {
       });
       setSuccess(res.data?.message || "Registration successful. Check your email.");
       setForm(initialState);
+      setPasswordTouched(false);
     } catch (err) {
       setError(getErrorMessage(err, "Registration failed."));
     } finally {
@@ -161,13 +173,21 @@ export default function SignupClient() {
             </FormField>
           </div>
 
-          <FormField id="password" label="Password" required>
+          <FormField
+            id="password"
+            label="Password"
+            hint={PASSWORD_HINT}
+            error={passwordTouched ? passwordError : undefined}
+            required
+          >
             <Input
               name="password"
               type="password"
               autoComplete="new-password"
               value={form.password}
               onChange={handleChange}
+              onBlur={() => setPasswordTouched(true)}
+              minLength={PASSWORD_MIN_LENGTH}
               required
             />
           </FormField>
