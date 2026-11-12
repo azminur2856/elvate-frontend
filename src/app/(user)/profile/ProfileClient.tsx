@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import UpdateUserModal from "@/components/modal/UpdateUserModal";
 import ChangePasswordModal from "@/components/modal/ChangePasswordModal";
 import PhoneVerificationModal from "@/components/modal/PhoneVerificationModal";
-import FaceVerificationModal from "@/components/modal/FaceVerificationModal";
+import FaceVerificationModal, { FACE_SETUP_TEXT } from "@/components/modal/FaceVerificationModal";
 import ProfileImageUploadModal from "@/components/modal/ProfileImageUploadModal";
 
 type UserProfile = {
@@ -79,7 +79,7 @@ export default function ProfileClient() {
   const [showUpdate, setShowUpdate] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [phoneModalOpen, setPhoneModalOpen] = useState(false);
-  const { smsOtpEnabled } = useFeatureFlags();
+  const { smsOtpEnabled, faceLoginEnabled, loading: flagsLoading } = useFeatureFlags();
   const [faceModalOpen, setFaceModalOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
@@ -197,10 +197,17 @@ export default function ProfileClient() {
             </Row>
             <Row label="Face login">
               <StatusBadge ok={Boolean(user.isFaceVerified)} okLabel="On" noLabel="Not set up" />
-              {!user.isFaceVerified ? (
+              {/* Admin switch (FE-27): no setup while off; nothing shown until it is known. */}
+              {user.isFaceVerified ? (
+                !faceLoginEnabled && !flagsLoading ? (
+                  <span className="text-sm text-muted-foreground">Temporarily unavailable</span>
+                ) : null
+              ) : faceLoginEnabled ? (
                 <Button variant="link" size="sm" className="h-auto p-0 text-link" onClick={() => setFaceModalOpen(true)}>
                   Set up face login
                 </Button>
+              ) : !flagsLoading ? (
+                <span className="basis-full text-sm text-muted-foreground">{FACE_SETUP_TEXT.unavailable}</span>
               ) : null}
             </Row>
             <Row label="Subscription">
