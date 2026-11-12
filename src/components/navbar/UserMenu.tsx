@@ -4,9 +4,8 @@ import Link from "next/link";
 import { LogOut } from "lucide-react";
 import type { SessionUser } from "@/lib/session";
 import { useLogout } from "@/hooks/useLogout";
-import { initials } from "@/lib/media";
 import { getUserMenuItems, type NavRole } from "@/components/navbar/nav-config";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -48,10 +47,7 @@ export function UserMenu({
           className="rounded-full"
           aria-label={`Account menu for ${user.name}`}
         >
-          <Avatar className="size-8">
-            <AvatarImage src={profileImageUrl(user)} alt="" />
-            <AvatarFallback className="text-xs">{initials(user.name)}</AvatarFallback>
-          </Avatar>
+          <UserAvatar name={user.name} avatarUrl={user.avatarUrl} legacySrc={profileImageUrl(user)} size="xs" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

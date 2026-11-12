@@ -10,6 +10,8 @@ export type Session = {
     role: Role;
     email: string;
     profileImage: string;
+    /** BE-28: `/media/me/avatar?size=xs&v=…`, or null without a picture. */
+    avatarUrl?: string | null;
   };
   accessToken: string;
   refreshToken: string;
@@ -25,8 +27,8 @@ export type SessionUser = Session["user"];
  */
 export function toSessionUser(session: Session | null): SessionUser | null {
   if (!session?.user) return null;
-  const { id, name, role, email, profileImage } = session.user;
-  return { id, name, role, email, profileImage };
+  const { id, name, role, email, profileImage, avatarUrl } = session.user;
+  return { id, name, role, email, profileImage, avatarUrl };
 }
 
 export async function getSession() {
