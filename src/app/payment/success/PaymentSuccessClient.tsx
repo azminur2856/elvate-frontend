@@ -36,7 +36,9 @@ export default function PaymentSuccessClient() {
       return;
     }
     api
-      .get(`/subscriptions/session/${sessionId}`)
+      // Encoded: session_id comes from the URL, so "../" or "?" must not
+      // be able to change which API path is called.
+      .get(`/subscriptions/session/${encodeURIComponent(sessionId)}`)
       .then((res) => setSession(res.data))
       .catch((err) => setError(getErrorMessage(err, "Failed to fetch the payment details.")))
       .finally(() => setLoading(false));
