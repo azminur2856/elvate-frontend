@@ -19,7 +19,8 @@ const contentSecurityPolicy = [
   "connect-src 'self' https://justadudewhohacks.github.io",
   "media-src 'self' blob:",
   "worker-src 'self' blob:",
-  "frame-src 'none'",
+  // PDF to Text previews the user's own upload from a blob: URL; nothing else is framed.
+  "frame-src blob:",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
