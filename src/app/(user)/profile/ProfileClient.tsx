@@ -6,12 +6,11 @@ import { Camera, Mail, Phone } from "lucide-react";
 import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
 import { formatDate, formatDateTime } from "@/lib/format";
-import { initials } from "@/components/navbar/UserMenu";
 import { useFeatureFlags } from "@/components/settings/FeatureFlagsProvider";
 import { PageShell } from "@/components/shared/PageShell";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { FormMessage } from "@/components/forms/FormMessage";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -104,9 +103,9 @@ export default function ProfileClient() {
     };
   }, []);
 
-  // Profile image is served as a blob behind auth; keep it as an object URL.
+  // Until BE-28 sends `avatarUrl`, the picture is a blob behind auth; keep it as an object URL.
   useEffect(() => {
-    if (!user) return;
+    if (!user || user.avatarUrl !== undefined) return;
     let url: string | undefined;
     api
       .get("/users/profileImage", { responseType: "blob" })
@@ -148,10 +147,7 @@ export default function ProfileClient() {
       <Card className="w-full">
         <CardContent className="flex flex-col items-center pt-6">
           <div className="relative">
-            <Avatar className="size-32 border-2 border-primary">
-              <AvatarImage src={imgSrc} alt="" />
-              <AvatarFallback className="text-3xl">{initials(name)}</AvatarFallback>
-            </Avatar>
+            <UserAvatar name={name} avatarUrl={user.avatarUrl} legacySrc={imgSrc} size="md" className="border-2 border-primary" />
             <Button
               size="icon-sm"
               className="absolute -bottom-1 -right-1 rounded-full shadow"
