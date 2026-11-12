@@ -53,19 +53,10 @@ function Summary({ data }: { data: Pick<ProductReviewsPage, "average" | "count" 
 
 function ReviewItem({ review }: { review: Review }) {
   const name = review.user?.name ?? "Customer";
-  // BE-28 sends `/media/avatar/<key>`; before that a full picture URL.
-  const avatar = review.user?.avatar ?? null;
-  const ours = avatar?.startsWith("/media/") ?? false;
   return (
     <article className="grid gap-2 py-5">
       <div className="flex items-center gap-3">
-        <UserAvatar
-          name={name}
-          size="xs"
-          className="size-9"
-          avatarUrl={ours ? avatar : undefined}
-          legacySrc={ours ? undefined : (avatar ?? undefined)}
-        />
+        <UserAvatar name={name} size="xs" className="size-9" avatarUrl={review.user?.avatar ?? null} />
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{name}</p>
           <LocalTime value={review.createdAt} className="text-xs text-muted-foreground" />
