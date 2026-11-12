@@ -40,3 +40,6 @@ export function cashToCollect(o: Pick<OrderSummary, "paymentMethod" | "paymentSt
   const onTheWay = !["CANCELLED", "RETURNED", "DELIVERED", "RETURN_REQUESTED"].includes(o.status);
   return o.paymentMethod === "COD" && o.paymentStatus === "UNPAID" && onTheWay ? o.total : 0;
 }
+
+/** BE-29: "Send out again" puts a return request back to SHIPPED (the delivery man picks it up again). */
+export const SEND_OUT_AGAIN_STATUS: OrderStatus = "SHIPPED";

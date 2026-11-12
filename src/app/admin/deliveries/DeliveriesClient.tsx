@@ -4,9 +4,10 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { isAxiosError } from "axios";
+import { toast } from "react-hot-toast";
 import { FilterX, RefreshCw, Search } from "lucide-react";
 import api from "@/lib/authAxios";
-import { cashToCollect, DELIVERY_VIEWS, type DeliveryView, todayInput } from "@/lib/deliveries";
+import { cashToCollect, DELIVERY_VIEWS, type DeliveryView, SEND_OUT_AGAIN_STATUS, todayInput } from "@/lib/deliveries";
 import { getErrorMessage } from "@/lib/errors";
 import { formatBDT } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -23,12 +24,14 @@ import { FormMessage } from "@/components/forms/FormMessage";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 
 const PAGE_SIZE = 15;
 const ANY = "any";
@@ -76,6 +79,10 @@ export default function DeliveriesClient({ initialView, initialToday }: Deliveri
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [assigning, setAssigning] = useState<AssignTarget | null>(null);
+  // Settling a return request: confirm it (RETURNED) or send the parcel out again.
+  const [settling, setSettling] = useState<{ order: OrderSummary; to: "RETURNED" | "AGAIN" } | null>(null);
+  const [settleNote, setSettleNote] = useState("");
+  const [settleSaving, setSettleSaving] = useState(false);
 
   const rangeError = from && to && from > to ? "The start date must be on or before the end date." : "";
   const filtered = Boolean(view !== "all" || deliveryManId !== ANY || query || from || to);
@@ -140,6 +147,29 @@ export default function DeliveriesClient({ initialView, initialToday }: Deliveri
     setReloadKey((k) => k + 1);
     loadSummary();
   }, [loadSummary]);
+
+  const settle = async () => {
+    if (!settling) return;
+    setSettleSaving(true);
+    try {
+      await api.patch(`/admin/orders/${settling.order.id}/status`, {
+        status: settling.to === "RETURNED" ? "RETURNED" : SEND_OUT_AGAIN_STATUS,
+        note: settleNote.trim() || undefined,
+      });
+      toast.success(
+        settling.to === "RETURNED"
+          ? `${settling.order.orderNumber} is returned.`
+          : `${settling.order.orderNumber} goes out again with ${settling.order.deliveryMan?.name ?? "its delivery man"}.`
+      );
+      setSettling(null);
+      setSettleNote("");
+      refresh();
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Could not update the order."));
+    } finally {
+      setSettleSaving(false);
+    }
+  };
 
   const applyView = (next: DeliveryView, today = false) => {
     setView(next);
@@ -235,6 +265,16 @@ export default function DeliveriesClient({ initialView, initialToday }: Deliveri
               {o.deliveryMan ? "Reassign" : "Assign"}
               <span className="sr-only"> order {o.orderNumber}</span>
             </Button>
+          ) : null}
+          {o.status === "RETURN_REQUESTED" ? (
+            <>
+              <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => setSettling({ order: o, to: "RETURNED" })}>
+                Confirm return<span className="sr-only"> of order {o.orderNumber}</span>
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => setSettling({ order: o, to: "AGAIN" })}>
+                Send out again<span className="sr-only"> order {o.orderNumber}</span>
+              </Button>
+            </>
           ) : null}
           <Button asChild size="sm" variant="ghost">
             <Link href={`/admin/orders/${o.id}`}>
@@ -458,6 +498,31 @@ export default function DeliveriesClient({ initialView, initialToday }: Deliveri
           </CardContent>
         </Card>
       </div>
+      <ConfirmDialog
+        open={settling !== null}
+        onOpenChange={(open) => {
+          if (!open && !settleSaving) {
+            setSettling(null);
+            setSettleNote("");
+          }
+        }}
+        title={settling?.to === "RETURNED" ? "Confirm return?" : "Send out again?"}
+        description={
+          settling?.to === "RETURNED"
+            ? "Only confirm once the parcel is back in the shop. Stock goes back on sale, the coupon use is released and paid card orders are refunded."
+            : "The order goes back to Shipped and the delivery man picks it up again. You can still reassign it."
+        }
+        confirmLabel={settling?.to === "RETURNED" ? "Confirm return" : "Send out again"}
+        destructive={settling?.to === "RETURNED"}
+        loading={settleSaving}
+        onConfirm={settle}
+      >
+        <div className="grid gap-2">
+          <Label htmlFor="settle-note">{settling?.to === "RETURNED" ? "Reason (shown in the timeline)" : "Note (optional)"}</Label>
+          <Textarea id="settle-note" rows={3} maxLength={300} value={settleNote} onChange={(e) => setSettleNote(e.target.value)} />
+        </div>
+      </ConfirmDialog>
+
       <AssignDeliveryManDialog
         order={assigning}
         onClose={() => setAssigning(null)}
