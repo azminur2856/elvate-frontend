@@ -7,6 +7,7 @@ import { toast } from "react-hot-toast";
 import api from "@/lib/authAxios";
 import { categoryHref, isRootCategory } from "@/lib/catalog-url";
 import { getErrorMessage } from "@/lib/errors";
+import { isShopImagePath } from "@/lib/media";
 import { slugify, SLUG_RE } from "@/lib/slug";
 import type { Category } from "@/types/commerce";
 import { subtreeIds, useCategoryTree, type FlatCategory } from "@/hooks/useCategoryTree";
@@ -66,7 +67,8 @@ function CategoryDialog({
     const next: typeof errors = {};
     if (!name.trim()) next.name = "Enter a name.";
     if (slug.trim() && !SLUG_RE.test(slug.trim())) next.slug = "Use lowercase letters, numbers and single dashes.";
-    if (imageUrl.trim()) {
+    // A full URL, or a shop photo path the API sent back (`/img/...`, BE-28).
+    if (imageUrl.trim() && !isShopImagePath(imageUrl.trim())) {
       try {
         new URL(imageUrl.trim());
       } catch {
