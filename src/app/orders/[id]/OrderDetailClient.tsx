@@ -92,6 +92,19 @@ export default function OrderDetailClient({
       const res = await api.post<{ checkoutUrl: string }>(`/orders/${order.id}/pay`);
       window.location.assign(res.data.checkoutUrl);
     } catch (err) {
+      if (isAxiosError(err) && err.response?.status === 409) {
+        // SEC-10: the last checkout was paid a moment ago (webhook still on its
+        // way). Say so, then reload the order instead of opening a new checkout.
+        toast(getErrorMessage(err, "This order has just been paid."));
+        setTimeout(() => {
+          api
+            .get<OrderDetail>(`/orders/${encodeURIComponent(order.id)}`)
+            .then((res) => setOrder(res.data))
+            .catch(() => undefined)
+            .finally(() => setPaying(false));
+        }, 3000);
+        return;
+      }
       toast.error(getErrorMessage(err, "Could not start the payment."));
       setPaying(false);
     }
