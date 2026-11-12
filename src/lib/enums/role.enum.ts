@@ -18,7 +18,7 @@ export const ROLE_INFO: Record<Role, { label: string; description: string }> = {
 };
 
 /** Admin areas a STAFF member may open (prefix match on path segments). */
-export const STAFF_ADMIN_PATHS = ["/admin/orders", "/admin/products", "/admin/reviews"];
+export const STAFF_ADMIN_PATHS = ["/admin/orders", "/admin/deliveries", "/admin/products", "/admin/reviews"];
 
 /** True for ADMIN and STAFF (anyone who can open part of /admin). */
 export const isShopManager = (role: string | null | undefined) => role === Role.ADMIN || role === Role.STAFF;
