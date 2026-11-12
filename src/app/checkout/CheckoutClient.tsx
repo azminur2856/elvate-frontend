@@ -66,7 +66,8 @@ export default function CheckoutClient() {
   const [quoteError, setQuoteError] = useState("");
 
   const [placing, setPlacing] = useState(false);
-  const [placeError, setPlaceError] = useState<{ message: string; lines: CartLine[] } | null>(null);
+  // `unsure`: a server error or no answer, so the order may still have been saved.
+  const [placeError, setPlaceError] = useState<{ message: string; lines: CartLine[]; unsure?: boolean } | null>(null);
   const placed = useRef(false);
   const quoteSeq = useRef(0);
 
@@ -170,6 +171,14 @@ export default function CheckoutClient() {
         setPlaceError({
           message: getErrorMessage(err, "Some items in your cart changed while you were checking out."),
           lines: fromBody.length ? fromBody : (q?.items ?? []).filter((l) => !l.available),
+        });
+      } else if (!isAxiosError(err) || !err.response || err.response.status >= 500) {
+        // The order may have been saved before the error: re-read the cart and point to My orders.
+        await refresh();
+        setPlaceError({
+          message: "Something went wrong on our side. Your order may still have gone through, so please check My orders before you try again.",
+          lines: [],
+          unsure: true,
         });
       } else {
         setPlaceError({ message: getErrorMessage(err, "Could not place your order. Please try again."), lines: [] });
@@ -391,7 +400,7 @@ export default function CheckoutClient() {
             ) : null}
 
             {placeError ? (
-              <FormMessage variant="error" title="Your order wasn't placed">
+              <FormMessage variant="error" title={placeError.unsure ? "We couldn't confirm your order" : "Your order wasn't placed"}>
                 <p>{placeError.message}</p>
                 {placeError.lines.length ? (
                   <ul className="mt-2 list-disc pl-5">
@@ -403,6 +412,11 @@ export default function CheckoutClient() {
                       </li>
                     ))}
                   </ul>
+                ) : null}
+                {placeError.unsure ? (
+                  <Button asChild size="sm" variant="outline" className="mt-3">
+                    <Link href="/orders">Check My orders</Link>
+                  </Button>
                 ) : null}
                 {placeError.lines.length ? (
                   <Button asChild size="sm" variant="outline" className="mt-3">
