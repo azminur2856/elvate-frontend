@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { isAxiosError } from "axios";
 import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
 import { captureFrame, useFaceAlignment } from "@/hooks/useFaceAlignment";
+import type { FaceReferenceResult } from "@/types/face";
 import {
   Dialog,
   DialogContent,
@@ -18,12 +20,18 @@ import { StatusIndicator } from "@/components/shared/StatusIndicator";
 type Props = {
   open: boolean;
   onClose: () => void;
+  /** Called after face login was set up. */
   onVerified?: () => void;
 };
 
+/**
+ * Face login setup (SEC-04): one camera photo becomes the private reference
+ * that face login compares against. It is never the profile picture and is
+ * never shown anywhere. `POST /users/face-reference`, multipart `photo`.
+ */
 export default function FaceVerificationModal({ open, onClose, onVerified }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const verifyRef = useRef<HTMLButtonElement>(null);
+  const takeRef = useRef<HTMLButtonElement>(null);
   const { status, cameraError } = useFaceAlignment(videoRef, open);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
@@ -35,7 +43,7 @@ export default function FaceVerificationModal({ open, onClose, onVerified }: Pro
     }
   }, [open]);
 
-  const handleVerify = async () => {
+  const takePhoto = async () => {
     const video = videoRef.current;
     if (!video) return;
     setLoading(true);
@@ -43,21 +51,28 @@ export default function FaceVerificationModal({ open, onClose, onVerified }: Pro
     try {
       const blob = await captureFrame(video);
       const formData = new FormData();
-      formData.append("liveImage", blob, "live.jpg");
-      const res = await api.post("/users/verify-face", formData, {
+      formData.append("photo", blob, "reference.jpg");
+      const res = await api.post<FaceReferenceResult>("/users/face-reference", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      if (res.data?.verified) {
-        setResult({ ok: true, text: "Face verified." });
+      if (res.data?.faceLoginEnabled) {
+        setResult({ ok: true, text: "Face login is set up. You can now log in with your face." });
         setTimeout(() => {
           onVerified?.();
           onClose();
-        }, 800);
+        }, 1200);
       } else {
-        setResult({ ok: false, text: "Face not matched. Try again." });
+        setResult({ ok: false, text: "Face login could not be set up. Please try again." });
       }
     } catch (err) {
-      setResult({ ok: false, text: getErrorMessage(err, "Verification failed.") });
+      const status = isAxiosError(err) ? err.response?.status : undefined;
+      setResult({
+        ok: false,
+        text:
+          status === 503
+            ? "Face login is unavailable right now. Please try again later."
+            : getErrorMessage(err, "The photo could not be used. Please try again."),
+      });
     } finally {
       setLoading(false);
     }
@@ -69,13 +84,14 @@ export default function FaceVerificationModal({ open, onClose, onVerified }: Pro
         className="sm:max-w-sm"
         onOpenAutoFocus={(e) => {
           e.preventDefault();
-          verifyRef.current?.focus();
+          takeRef.current?.focus();
         }}
       >
         <DialogHeader>
-          <DialogTitle>Face verification</DialogTitle>
+          <DialogTitle>Set up face login</DialogTitle>
           <DialogDescription>
-            Centre your face in the frame and keep your head straight.
+            We take one private photo to compare with when you log in with your face. It is never your profile
+            picture and is never shown to anyone.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center gap-3">
@@ -86,10 +102,13 @@ export default function FaceVerificationModal({ open, onClose, onVerified }: Pro
               playsInline
               muted
               aria-label="Live camera preview"
-              className="absolute left-1/2 top-1/2 min-h-full min-w-full -translate-x-1/2 -translate-y-1/2 object-cover"
+              className="absolute left-1/2 top-1/2 min-h-full min-w-full -translate-x-1/2 -translate-y-1/2 -scale-x-100 object-cover"
             />
           </div>
           <StatusIndicator status={status} />
+          <p className="text-center text-sm text-muted-foreground">
+            Look straight at the camera with your eyes open, alone, in good light.
+          </p>
         </div>
         {cameraError ? (
           <FormMessage variant="error">
@@ -100,17 +119,17 @@ export default function FaceVerificationModal({ open, onClose, onVerified }: Pro
           <FormMessage variant={result.ok ? "success" : "error"}>{result.text}</FormMessage>
         ) : null}
         <Button
-          ref={verifyRef}
+          ref={takeRef}
           className="w-full"
-          onClick={handleVerify}
+          onClick={takePhoto}
           loading={loading}
-          disabled={cameraError}
+          disabled={cameraError || result?.ok === true}
         >
-          Verify face
+          Take photo
         </Button>
         {status !== "aligned" && !cameraError ? (
           <p className="text-center text-xs text-muted-foreground">
-            Tip: verification works best when the indicator above is green.
+            Tip: the photo works best when the indicator above is green.
           </p>
         ) : null}
       </DialogContent>
