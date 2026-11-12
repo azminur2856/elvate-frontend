@@ -10,8 +10,42 @@ const PUBLIC_ROUTES = ["/login", "/signup"];
 const startsWithSegment = (pathname: string, prefix: string) =>
   pathname === prefix || pathname.startsWith(`${prefix}/`);
 
+// Backend proxy headers (see API-CONTRACT.md, SEC-06 / FSEC-06). The backend
+// trusts the client IP only when the shared secret matches, so callers that
+// hit the Render URL directly can't pick their own rate-limit key.
+const PROXY_SECRET_HEADER = "x-elvate-proxy-secret";
+const CLIENT_IP_HEADER = "x-elvate-client-ip";
+
+/** Vercel sets both headers itself and overwrites values sent by the client. */
+function clientIp(req: NextRequest): string | null {
+  const realIp = req.headers.get("x-real-ip")?.trim();
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return realIp || forwarded || null;
+}
+
+/**
+ * `/api/backend/*` is rewritten to the backend by next.config.ts. Add the
+ * proxy headers and pass everything else (cookies, body, redirects) through
+ * untouched.
+ */
+function forwardToBackend(req: NextRequest) {
+  const headers = new Headers(req.headers);
+  // Never forward copies the browser sent itself.
+  headers.delete(PROXY_SECRET_HEADER);
+  headers.delete(CLIENT_IP_HEADER);
+  const secret = process.env.PROXY_SHARED_SECRET;
+  const ip = clientIp(req);
+  if (secret && ip) {
+    headers.set(PROXY_SECRET_HEADER, secret);
+    headers.set(CLIENT_IP_HEADER, ip);
+  }
+  return NextResponse.next({ request: { headers } });
+}
+
 export default async function middleware(req: NextRequest) {
   const { pathname, search, searchParams } = req.nextUrl;
+
+  if (startsWithSegment(pathname, "/api/backend")) return forwardToBackend(req);
 
   // Get session (returns null if not logged in)
   const session = await getSession();
@@ -55,6 +89,8 @@ export default async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    // Backend proxy: adds the shared-secret and client IP headers
+    "/api/backend/:path*",
     // Not available if user logged in
     "/login",
     "/signup",
