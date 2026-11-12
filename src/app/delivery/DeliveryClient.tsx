@@ -29,7 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const PAGE_SIZE = 10;
 type Scope = "active" | "completed";
-type Action = { order: DeliveryOrder; status: "OUT_FOR_DELIVERY" | "DELIVERED" | "RETURNED" };
+type Action = { order: DeliveryOrder; status: "OUT_FOR_DELIVERY" | "DELIVERED" | "RETURN_REQUESTED" };
 
 const addressText = (o: DeliveryOrder) =>
   [o.shippingAddress.addressLine, o.shippingAddress.area, o.shippingAddress.city, o.shippingAddress.postalCode]
@@ -113,7 +113,7 @@ function OrderCard({ order, onAction }: { order: DeliveryOrder; onAction: (a: Ac
       >
         <span className="flex items-center gap-2 text-sm font-medium">
           <Banknote aria-hidden="true" className="size-4" />
-          {order.codDue > 0 ? "Collect in cash" : "Already paid"}
+          {order.codDue > 0 ? "Collect in cash" : order.status === "RETURN_REQUESTED" ? "Nothing to collect" : "Already paid"}
         </span>
         <span className="font-heading text-lg font-bold tabular-nums">{order.codDue > 0 ? formatBDT(order.codDue) : "৳0"}</span>
       </div>
@@ -153,11 +153,15 @@ function OrderCard({ order, onAction }: { order: DeliveryOrder; onAction: (a: Ac
             <PackageCheck aria-hidden="true" />
             Delivered
           </Button>
-          <Button size="lg" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onAction({ order, status: "RETURNED" })}>
+          <Button size="lg" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onAction({ order, status: "RETURN_REQUESTED" })}>
             <Undo2 aria-hidden="true" />
-            Returned
+            Return
           </Button>
         </div>
+      ) : order.status === "RETURN_REQUESTED" ? (
+        <p className="rounded-lg bg-muted px-3 py-2 text-sm">
+          Bring the parcel back to the shop. Staff will confirm the return.
+        </p>
       ) : null}
     </article>
   );
@@ -208,7 +212,7 @@ export default function DeliveryClient() {
   };
 
   const needsCash = action?.status === "DELIVERED" && action.order.codDue > 0;
-  const needsNote = action?.status === "RETURNED";
+  const needsNote = action?.status === "RETURN_REQUESTED";
   const blocked = (needsCash && !cashConfirmed) || (needsNote && !note.trim());
 
   const submit = async () => {
@@ -224,7 +228,7 @@ export default function DeliveryClient() {
           ? "Marked as out for delivery."
           : action.status === "DELIVERED"
             ? "Delivered. Well done!"
-            : "Marked as returned."
+            : "Return requested. Bring the parcel back to the shop."
       );
       closeAction();
       loadStats();
@@ -304,7 +308,7 @@ export default function DeliveryClient() {
             ? "Start this delivery?"
             : action?.status === "DELIVERED"
               ? "Mark as delivered?"
-              : "Mark as returned?"
+              : "Return this parcel?"
         }
         description={
           action
@@ -314,11 +318,11 @@ export default function DeliveryClient() {
                 ? needsCash
                   ? `Confirm you collected ${formatBDT(action.order.codDue)} in cash.`
                   : "This order was paid online; nothing to collect."
-                : "The parcel goes back to the shop. Explain what happened."
+                : "The parcel goes back to the shop and staff confirm the return when it arrives. Explain what happened."
             : undefined
         }
-        confirmLabel={action?.status === "OUT_FOR_DELIVERY" ? "On my way" : action?.status === "DELIVERED" ? "Delivered" : "Returned"}
-        destructive={action?.status === "RETURNED"}
+        confirmLabel={action?.status === "OUT_FOR_DELIVERY" ? "On my way" : action?.status === "DELIVERED" ? "Delivered" : "Request return"}
+        destructive={action?.status === "RETURN_REQUESTED"}
         confirmDisabled={blocked}
         loading={saving}
         onConfirm={submit}
