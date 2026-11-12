@@ -11,11 +11,13 @@ import { afterLoginTarget, safeNextPath } from "@/lib/redirect";
 import { canvasToJpeg, captureFrame, useFaceAlignment, type FaceFrame } from "@/hooks/useFaceAlignment";
 import { FACE_FIRST_TIME_HINT, FACE_LOGIN_FAILED_MESSAGE, type FaceAction, type FaceChallenge } from "@/types/face";
 import { AuthCard } from "@/components/auth/AuthCard";
+import { isFaceLoginTurnedOff, useFeatureFlags } from "@/components/settings/FeatureFlagsProvider";
 import { FormField } from "@/components/forms/FormField";
 import { FormMessage } from "@/components/forms/FormMessage";
 import { StatusIndicator } from "@/components/shared/StatusIndicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -59,6 +61,9 @@ function beep() {
  */
 export default function FaceLoginClient() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const { faceLoginEnabled, loading: flagsLoading, refresh: refreshFlags } = useFeatureFlags();
+  // The server said 403 "Face login is turned off" during this visit (FE-27).
+  const [turnedOff, setTurnedOff] = useState(false);
   const [phase, setPhase] = useState<Phase>("email");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -84,8 +89,13 @@ export default function FaceLoginClient() {
     setNext(safeNextPath(new URLSearchParams(window.location.search).get("next")));
   }, []);
 
-  /** Lock (429), or the generic failure text. Returns true for a lock. */
+  /** Switched off (403), lock (429), or the generic failure text. Returns true when retrying is pointless. */
   const showFailure = useCallback((err: unknown, fallback: string) => {
+    if (isFaceLoginTurnedOff(err)) {
+      setTurnedOff(true);
+      void refreshFlags();
+      return true;
+    }
     const minutes = retryAfterMinutes(err);
     if (minutes !== null || (isAxiosError(err) && err.response?.status === 429)) {
       setLocked(true);
@@ -97,7 +107,7 @@ export default function FaceLoginClient() {
     }
     setMessage({ type: "error", text: getErrorMessage(err, fallback) });
     return false;
-  }, []);
+  }, [refreshFlags]);
 
   const requestChallenge = useCallback(
     async (address: string) => {
@@ -270,6 +280,32 @@ export default function FaceLoginClient() {
     setMessage(null);
   };
 
+  const backToLogin = next !== "/" ? `/login?next=${encodeURIComponent(next)}` : "/login";
+
+  if (flagsLoading) {
+    return (
+      <AuthCard title="Face login">
+        <div role="status" aria-label="Loading face login" className="grid gap-4">
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+      </AuthCard>
+    );
+  }
+
+  if (!faceLoginEnabled || turnedOff) {
+    return (
+      <AuthCard
+        title="Face login is unavailable"
+        description="Face login has been temporarily disabled by the administrator. Please sign in with your password or continue with Google."
+      >
+        <Button asChild className="w-full">
+          <Link href={backToLogin}>Back to sign in</Link>
+        </Button>
+      </AuthCard>
+    );
+  }
+
   const stepText =
     phase === "first"
       ? "Look straight at the camera…"
@@ -282,10 +318,7 @@ export default function FaceLoginClient() {
       title="Face login"
       description={phase === "email" ? "Enter your email, then follow one short prompt in front of the camera." : challenge?.prompt}
       footer={
-        <Link
-          href={next !== "/" ? `/login?next=${encodeURIComponent(next)}` : "/login"}
-          className="text-link hover:underline"
-        >
+        <Link href={backToLogin} className="text-link hover:underline">
           Use password instead
         </Link>
       }
