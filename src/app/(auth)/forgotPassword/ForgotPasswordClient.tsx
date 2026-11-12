@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { isAxiosError } from "axios";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errors";
 import { AuthCard } from "@/components/auth/AuthCard";
@@ -23,6 +24,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 type Method = "EMAIL" | "SMS";
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function ForgotPasswordClient() {
   const [email, setEmail] = useState("");
   const [method, setMethod] = useState<Method>("EMAIL");
@@ -33,15 +36,29 @@ export default function ForgotPasswordClient() {
   const handleRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    const address = email.trim();
+    if (!EMAIL_RE.test(address)) {
+      setError("Enter a valid email address.");
+      return;
+    }
     setLoading(true);
     try {
       await api.post("/auth/forgotPassword", {
-        email,
+        email: address,
         verificationMethod: method,
       });
-      setSentTo(email);
+      setSentTo(address);
     } catch (err) {
-      setError(getErrorMessage(err, "Could not send the reset link."));
+      const status = isAxiosError(err) ? err.response?.status : undefined;
+      // Same answer whether or not the account exists (SEC-12): only rate
+      // limits and server or network errors are shown as errors.
+      if (status && status >= 400 && status < 500 && status !== 429) {
+        setSentTo(address);
+      } else if (status === 429) {
+        setError(getErrorMessage(err, "Too many requests. Please wait a few minutes and try again."));
+      } else {
+        setError("Could not send the reset link right now. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -112,9 +129,10 @@ export default function ForgotPasswordClient() {
           <DialogHeader>
             <DialogTitle>Check your email</DialogTitle>
             <DialogDescription>
-              We sent a password reset link to{" "}
-              <span className="font-medium text-foreground">{sentTo}</span>. The
-              link expires in 5 minutes.
+              If an account exists for{" "}
+              <span className="font-medium text-foreground">{sentTo}</span>, we sent
+              instructions to reset the password. The link expires in 5 minutes.
+              Check your spam folder if nothing arrives.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
