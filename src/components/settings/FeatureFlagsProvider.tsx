@@ -3,9 +3,19 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { isAxiosError } from "axios";
 import api from "@/lib/api";
-import { FACE_LOGIN_TURNED_OFF_MESSAGE, SMS_TURNED_OFF_MESSAGE, type PublicSettings } from "@/types/settings";
+import {
+  FACE_LOGIN_TURNED_OFF_MESSAGE,
+  SMS_TURNED_OFF_MESSAGE,
+  type PublicSettings,
+  type ShippingFees,
+} from "@/types/settings";
 
-type FeatureFlags = PublicSettings & {
+type Flags = Omit<PublicSettings, "shipping"> & {
+  /** BE-30 delivery fees; `null` while loading, on error or on an older server (no free-delivery notes then). */
+  shipping: ShippingFees | null;
+};
+
+type FeatureFlags = Flags & {
   /** True until the first answer (the flags read as OFF meanwhile). */
   loading: boolean;
   /** Re-read the switches, e.g. after an admin change or a 403 "turned off". */
@@ -13,13 +23,24 @@ type FeatureFlags = PublicSettings & {
 };
 
 /** Safe default: every switch OFF while loading, on error, or before BE-25 is live. */
-const ALL_OFF: PublicSettings = { smsOtpEnabled: false, faceLoginEnabled: false };
+const ALL_OFF: Flags = { smsOtpEnabled: false, faceLoginEnabled: false, shipping: null };
+
+const whole = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v) && v >= 0;
+
+/** Only a complete, sane `shipping` object counts; anything else means "unknown". */
+function readShipping(value: unknown): ShippingFees | null {
+  if (!value || typeof value !== "object") return null;
+  const { insideDhaka, outsideDhaka, freeThreshold } = value as Record<string, unknown>;
+  return whole(insideDhaka) && whole(outsideDhaka) && whole(freeThreshold)
+    ? { insideDhaka, outsideDhaka, freeThreshold }
+    : null;
+}
 
 const FeatureFlagsContext = createContext<FeatureFlags | null>(null);
 
 /** Reads `GET /settings/public` once per page load and shares the switches. */
 export function FeatureFlagsProvider({ children }: { children: React.ReactNode }) {
-  const [flags, setFlags] = useState<PublicSettings>(ALL_OFF);
+  const [flags, setFlags] = useState<Flags>(ALL_OFF);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -28,6 +49,7 @@ export function FeatureFlagsProvider({ children }: { children: React.ReactNode }
       setFlags({
         smsOtpEnabled: res.data?.smsOtpEnabled === true,
         faceLoginEnabled: res.data?.faceLoginEnabled === true,
+        shipping: readShipping(res.data?.shipping),
       });
     } catch {
       setFlags(ALL_OFF);
