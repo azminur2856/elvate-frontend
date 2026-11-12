@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { LogOut } from "lucide-react";
-import type { Session } from "@/lib/session";
+import type { SessionUser } from "@/lib/session";
 import { useLogout } from "@/hooks/useLogout";
 import { getUserMenuItems, type NavRole } from "@/components/navbar/nav-config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,7 +18,7 @@ import {
 
 const IMAGEKIT = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT;
 
-export function profileImageUrl(user: Session["user"]): string | undefined {
+export function profileImageUrl(user: SessionUser): string | undefined {
   if (!IMAGEKIT || !user.profileImage) return undefined;
   if (user.profileImage === "profile.png") {
     return `${IMAGEKIT}/user_profile_image/${user.profileImage}`;
@@ -37,15 +37,14 @@ export function initials(name: string | undefined): string {
 }
 
 export function UserMenu({
-  session,
+  user,
   role,
 }: {
-  session: Session;
+  user: SessionUser;
   role: NavRole;
 }) {
   const { logout, loading } = useLogout();
   const items = getUserMenuItems(role);
-  const { user } = session;
 
   return (
     <DropdownMenu>

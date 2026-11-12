@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut, Menu } from "lucide-react";
-import type { Session } from "@/lib/session";
+import type { SessionUser } from "@/lib/session";
 import { useLogout } from "@/hooks/useLogout";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -45,12 +45,12 @@ function NavItem({ item, active }: { item: NavLink; active: boolean }) {
 
 export function MobileNav({
   groups,
-  session,
+  user,
   role,
   className,
 }: {
   groups: NavGroup[];
-  session: Session | null;
+  user: SessionUser | null;
   role: NavRole;
   className?: string;
 }) {
@@ -116,10 +116,10 @@ export function MobileNav({
 
           <Separator className="my-3" />
 
-          {session ? (
+          {user ? (
             <div>
               <p className="px-3 text-sm text-muted-foreground">
-                Signed in as <span className="font-medium text-foreground">{session.user.name}</span>
+                Signed in as <span className="font-medium text-foreground">{user.name}</span>
               </p>
               <ul className="mt-1">
                 {getUserMenuItems(role).map((item) => (

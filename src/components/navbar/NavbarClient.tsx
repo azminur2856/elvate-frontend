@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import api from "@/lib/authAxios";
 import { isShopManager } from "@/lib/enums/role.enum";
 import { REVIEWS_CHANGED_EVENT } from "@/lib/events";
-import type { Session } from "@/lib/session";
+import type { SessionUser } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { loginHref } from "@/lib/redirect";
@@ -20,7 +20,7 @@ import { applyBadges, getNavGroups } from "./nav-config";
 
 type Props = {
   className?: string;
-  session: Session | null;
+  user: SessionUser | null;
 };
 
 
@@ -41,9 +41,9 @@ function usePendingReviews(enabled: boolean): number | undefined {
   return count;
 }
 
-export default function NavbarClient({ className, session }: Props) {
+export default function NavbarClient({ className, user }: Props) {
   const pathname = usePathname();
-  const role = session?.user?.role ?? null;
+  const role = user?.role ?? null;
   const pendingReviews = usePendingReviews(isShopManager(role));
   const groups = applyBadges(getNavGroups(role), { "/admin/reviews": pendingReviews });
 
@@ -60,7 +60,7 @@ export default function NavbarClient({ className, session }: Props) {
       <div className="mx-auto flex h-full max-w-7xl items-center gap-2 px-3 sm:gap-3 sm:px-6">
         <MobileNav
           groups={groups}
-          session={session}
+          user={user}
           role={role}
           className="lg:hidden"
         />
@@ -83,8 +83,8 @@ export default function NavbarClient({ className, session }: Props) {
             <Link href="/shop">Shop</Link>
           </Button>
           <ThemeToggle />
-          {session ? (
-            <UserMenu session={session} role={role} />
+          {user ? (
+            <UserMenu user={user} role={role} />
           ) : (
             <Button asChild size="sm">
               <Link href={loginHref(pathname)}>Log in</Link>
