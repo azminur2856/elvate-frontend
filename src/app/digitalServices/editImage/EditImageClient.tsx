@@ -35,6 +35,26 @@ const ACCEPT = ["image/png", "image/jpeg", "image/jpg", "image/heic"];
 /** Clockwise quarter turns, the only rotations the API accepts. */
 const ROTATIONS = [0, 90, 180, 270] as const;
 
+type NaturalSize = { w: number; h: number };
+
+/**
+ * Whole-pixel crop box that stays inside the original image. Rounding the
+ * position and the size separately could end 1 px outside it, which the
+ * API rejects (backend SEC-03).
+ */
+function cropBox(area: Area, natural: NaturalSize | null) {
+  const left = Math.max(0, Math.floor(area.x));
+  const top = Math.max(0, Math.floor(area.y));
+  const maxWidth = natural ? natural.w - left : Infinity;
+  const maxHeight = natural ? natural.h - top : Infinity;
+  return {
+    left,
+    top,
+    width: Math.max(1, Math.min(Math.round(area.width), maxWidth)),
+    height: Math.max(1, Math.min(Math.round(area.height), maxHeight)),
+  };
+}
+
 const DEFAULT_EDIT: EditOptions = {
   brightness: 1,
   contrast: 1,
@@ -94,6 +114,8 @@ export default function EditImageClient() {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedArea, setCroppedArea] = useState<Area | null>(null);
+  /** Pixel size of the original image (crop coordinates refer to it). */
+  const [natural, setNatural] = useState<NaturalSize | null>(null);
 
   const setOpt = <K extends keyof EditOptions>(key: K, value: EditOptions[K]) =>
     setOpts((o) => ({ ...o, [key]: value }));
@@ -103,6 +125,7 @@ export default function EditImageClient() {
     setEditedUrl(null);
     setCropMode(false);
     setCroppedArea(null);
+    setNatural(null);
     setCrop({ x: 0, y: 0 });
     setZoom(1);
   };
@@ -126,12 +149,12 @@ export default function EditImageClient() {
         finalOpts.resize =
           width || height ? { ...(width ? { width } : {}), ...(height ? { height } : {}) } : undefined;
         if (cropMode && croppedArea) {
-          finalOpts.crop = {
-            left: Math.round(croppedArea.x),
-            top: Math.round(croppedArea.y),
-            width: Math.round(croppedArea.width),
-            height: Math.round(croppedArea.height),
-          };
+          const box = cropBox(croppedArea, natural);
+          if (box.width > IMAGE_SIDE_MAX || box.height > IMAGE_SIDE_MAX) {
+            toast.error(`The crop area can be at most ${IMAGE_SIDE_MAX} pixels per side. Zoom in a little.`);
+            return;
+          }
+          finalOpts.crop = box;
         } else {
           finalOpts.crop = undefined;
         }
@@ -171,7 +194,9 @@ export default function EditImageClient() {
             {cropMode ? (
               <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-lg border border-border bg-muted">
                 <Cropper
-                  image={source}
+                  // Always the original: the API crops the uploaded file, not the preview.
+                  image={tool.preview}
+                  onMediaLoaded={(m) => setNatural({ w: m.naturalWidth, h: m.naturalHeight })}
                   crop={crop}
                   zoom={zoom}
                   aspect={4 / 3}
