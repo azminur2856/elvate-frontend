@@ -7,7 +7,8 @@ import api from "@/lib/api";
 import { BACKEND_URL } from "@/lib/constants";
 import { getErrorMessage } from "@/lib/errors";
 import { afterLoginTarget, LOGIN_NEXT_KEY, safeNextPath } from "@/lib/redirect";
-import { FACE_FIRST_TIME_HINT } from "@/types/face";
+import { FACE_FIRST_TIME_HINT, FACE_LOGIN_OFF_NOTE } from "@/types/face";
+import { useFeatureFlags } from "@/components/settings/FeatureFlagsProvider";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { GoogleIcon } from "@/components/auth/GoogleIcon";
 import { FormField } from "@/components/forms/FormField";
@@ -23,6 +24,7 @@ const OAUTH_ERRORS: Record<string, string> = {
 };
 
 export default function LoginClient() {
+  const { faceLoginEnabled, loading: flagsLoading } = useFeatureFlags();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -140,13 +142,30 @@ export default function LoginClient() {
           <GoogleIcon className="size-4" />
           Continue with Google
         </Button>
-        <Button asChild type="button" variant="secondary" className="w-full">
-          <Link href={next !== "/" ? `/faceLogin?next=${encodeURIComponent(next)}` : "/faceLogin"}>
+        {faceLoginEnabled ? (
+          <Button asChild type="button" variant="secondary" className="w-full">
+            <Link href={next !== "/" ? `/faceLogin?next=${encodeURIComponent(next)}` : "/faceLogin"}>
+              <ScanFace aria-hidden="true" />
+              Log in with your face
+            </Link>
+          </Button>
+        ) : (
+          // Off, or not known yet (FE-27): visible but greyed out and inert.
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full cursor-not-allowed opacity-50"
+            aria-disabled="true"
+            aria-describedby={flagsLoading ? undefined : "face-login-note"}
+            onClick={(e) => e.preventDefault()}
+          >
             <ScanFace aria-hidden="true" />
             Log in with your face
-          </Link>
-        </Button>
-        <p className="text-center text-sm text-muted-foreground">{FACE_FIRST_TIME_HINT}</p>
+          </Button>
+        )}
+        <p id="face-login-note" className="text-center text-sm text-muted-foreground">
+          {faceLoginEnabled || flagsLoading ? FACE_FIRST_TIME_HINT : FACE_LOGIN_OFF_NOTE}
+        </p>
       </form>
     </AuthCard>
   );

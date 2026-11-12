@@ -25,3 +25,7 @@ export const FACE_LOGIN_FAILED_MESSAGE =
 
 /** FE-26: permanent hint under the face login button. */
 export const FACE_FIRST_TIME_HINT = "First time? Sign in with your password and set up face login from your profile.";
+
+/** FE-27: the login page while the admin switch `face_login` is off. */
+export const FACE_LOGIN_OFF_NOTE =
+  "Face login is temporarily unavailable. Please sign in with your password or continue with Google.";
