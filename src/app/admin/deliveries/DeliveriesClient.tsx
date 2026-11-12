@@ -437,16 +437,24 @@ export default function DeliveriesClient({ initialView, initialToday }: Deliveri
             </div>
           </div>
 
-          {error ? <FormMessage variant="error">{error}</FormMessage> : null}
-          <DataTable
-            columns={columns}
-            rows={data?.items ?? []}
-            rowKey={(o) => o.id}
-            loading={loading && !data}
-            loadingLabel="Loading deliveries"
-            emptyMessage={filtered ? "No orders match these filters." : "No orders to deliver right now."}
-            caption="Orders being delivered"
-          />
+          {error ? (
+            <div className="grid justify-items-start gap-3">
+              <FormMessage variant="error">{error}</FormMessage>
+              <Button variant="outline" size="sm" onClick={refresh}>
+                Try again
+              </Button>
+            </div>
+          ) : (
+            <DataTable
+              columns={columns}
+              rows={data?.items ?? []}
+              rowKey={(o) => o.id}
+              loading={loading && !data}
+              loadingLabel="Loading deliveries"
+              emptyMessage={filtered ? "No orders match these filters." : "No orders to deliver right now."}
+              caption="Orders being delivered"
+            />
+          )}
           {data && data.totalPages > 1 ? (
             <PaginationControls page={page} totalPages={data.totalPages} onPageChange={setPage} />
           ) : null}
