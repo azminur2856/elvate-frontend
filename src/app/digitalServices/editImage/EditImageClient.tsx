@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 
 type EditOptions = {
@@ -29,6 +30,9 @@ type EditOptions = {
 };
 
 const ACCEPT = ["image/png", "image/jpeg", "image/jpg", "image/heic"];
+
+/** Clockwise quarter turns, the only rotations the API accepts. */
+const ROTATIONS = [0, 90, 180, 270] as const;
 
 const DEFAULT_EDIT: EditOptions = {
   brightness: 1,
@@ -273,17 +277,23 @@ export default function EditImageClient() {
             </fieldset>
 
             <div className="grid gap-1.5">
-              <Label htmlFor="rotate">Rotate (degrees)</Label>
-              <Input
-                id="rotate"
-                type="number"
-                inputMode="numeric"
-                min={-360}
-                max={360}
-                className="w-32"
-                value={opts.rotate ?? 0}
-                onChange={(e) => setOpt("rotate", Number(e.target.value))}
-              />
+              <Label htmlFor="rotate">Rotate (clockwise)</Label>
+              {/* The API only accepts quarter turns (SEC-03). */}
+              <Select
+                value={String(opts.rotate ?? 0)}
+                onValueChange={(v) => setOpt("rotate", Number(v))}
+              >
+                <SelectTrigger id="rotate" className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROTATIONS.map((deg) => (
+                    <SelectItem key={deg} value={String(deg)}>
+                      {deg === 0 ? "No rotation" : `${deg}°`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <RangeControl
