@@ -33,6 +33,9 @@ export function safeNextPath(raw: string | null | undefined, fallback = "/"): st
     const url = new URL(value, base);
     if (url.origin !== base) return fallback;
     const path = url.pathname;
+    // Check again after normalising: "/.//evil.com", "/%2e//evil.com" and
+    // "/a/..//evil.com" all come out as "//evil.com" (another host).
+    if (path.startsWith("//") || path.startsWith("/\\")) return fallback;
     if (AUTH_PATHS.some((p) => path === p || path.startsWith(`${p}/`))) return fallback;
     return `${path}${url.search}${url.hash}`;
   } catch {
