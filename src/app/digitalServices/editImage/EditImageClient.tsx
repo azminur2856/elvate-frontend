@@ -5,6 +5,7 @@ import Cropper, { type Area } from "react-easy-crop";
 import { ImageIcon, RotateCcw, Save, Sparkles } from "lucide-react";
 import { toast } from "react-hot-toast";
 import api from "@/lib/authAxios";
+import { IMAGE_SIDE_MAX, IMAGE_SIDE_MIN, IMAGE_SIDE_RULE, isValidImageSide } from "@/lib/image-limits";
 import { useToolUpload } from "@/hooks/useToolUpload";
 import SubscriptionRequiredModal from "@/components/modal/SubscriptionRequiredModal";
 import { DropZone } from "@/components/tools/DropZone";
@@ -116,6 +117,14 @@ export default function EditImageClient() {
       async () => {
         if (!tool.file) return;
         const finalOpts: EditOptions = { ...opts };
+        const { width, height } = opts.resize ?? {};
+        if ((width !== undefined && !isValidImageSide(width)) || (height !== undefined && !isValidImageSide(height))) {
+          toast.error(`Resize: ${IMAGE_SIDE_RULE}`);
+          return;
+        }
+        // Only the sizes that were filled in; no empty `resize` object.
+        finalOpts.resize =
+          width || height ? { ...(width ? { width } : {}), ...(height ? { height } : {}) } : undefined;
         if (cropMode && croppedArea) {
           finalOpts.crop = {
             left: Math.round(croppedArea.x),
@@ -245,7 +254,9 @@ export default function EditImageClient() {
                     id="resize-w"
                     type="number"
                     inputMode="numeric"
-                    min={1}
+                    min={IMAGE_SIDE_MIN}
+                    max={IMAGE_SIDE_MAX}
+                    step={1}
                     value={opts.resize?.width ?? ""}
                     onChange={(e) =>
                       setOpt("resize", {
@@ -263,7 +274,9 @@ export default function EditImageClient() {
                     id="resize-h"
                     type="number"
                     inputMode="numeric"
-                    min={1}
+                    min={IMAGE_SIDE_MIN}
+                    max={IMAGE_SIDE_MAX}
+                    step={1}
                     value={opts.resize?.height ?? ""}
                     onChange={(e) =>
                       setOpt("resize", {
