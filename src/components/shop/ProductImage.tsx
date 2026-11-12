@@ -6,23 +6,14 @@ import { ImageOff } from "lucide-react";
 import { isShopImagePath, shopImageLoader } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
-/** Only ImageKit is whitelisted in next.config.ts `images.remotePatterns`. */
-export function isOptimizableImage(src: string): boolean {
-  try {
-    return new URL(src).hostname === "ik.imagekit.io";
-  } catch {
-    return false;
-  }
-}
-
 /**
  * How next/image should load a shop photo. `/img/...` (BE-28) gets sized
  * URLs from the image CDN through our rewrite, so Vercel's optimiser (and its
- * quota) is not used; other hosts load as they are.
+ * quota) is never used; anything else (e.g. an admin-entered category image
+ * URL) loads as it is.
  */
 export function shopImageProps(src: string): Pick<ImageProps, "loader" | "unoptimized"> {
-  if (isShopImagePath(src)) return { loader: shopImageLoader };
-  return { unoptimized: !isOptimizableImage(src) };
+  return isShopImagePath(src) ? { loader: shopImageLoader } : { unoptimized: true };
 }
 
 type ProductImageProps = {
@@ -38,9 +29,7 @@ type ProductImageProps = {
 };
 
 /**
- * Fills its (positioned, sized) parent. ImageKit URLs go through the Next
- * image optimiser; anything else (e.g. an admin-entered category image URL)
- * is rendered unoptimised so an unknown host can never crash the page.
+ * Fills its (positioned, sized) parent; see `shopImageProps` for how it loads.
  * Without a URL, or when the image fails to load, it shows a neutral placeholder.
  */
 export function ProductImage({
