@@ -16,6 +16,10 @@ function InputOTP({
   return (
     <OTPInput
       data-slot="input-otp"
+      // The default "increase-width" makes the hidden input 40 px wider than
+      // the boxes (room for password-manager badges), which put a horizontal
+      // scrollbar in the narrow code dialogs. One-time codes don't need it.
+      pushPasswordManagerStrategy="none"
       containerClassName={cn(
         "flex items-center gap-2 has-disabled:opacity-50",
         containerClassName

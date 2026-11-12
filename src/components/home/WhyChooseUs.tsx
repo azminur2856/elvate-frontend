@@ -1,36 +1,37 @@
 import { StickyScroll } from "../ui/sticky-scroll-reveal";
 import { SectionHeading } from "./SectionHeading";
 
+// Keep these claims true to what the app actually does.
 const content = [
   {
-    title: "One marketplace for shopping and digital work",
+    title: "Shopping and digital tools in one place",
     description:
-      "Elvate is where online shopping meets instant digital productivity. Discover trending products, gadgets and exclusive deals in one secure marketplace — and use state-of-the-art tools like one-click PDF conversion and AI-powered image editing without leaving the site.",
+      "Shop clothing for men, women and children, and use handy online tools like PDF to text, image to text, image resizing and photo editing, all with the same Elvate account.",
   },
   {
-    title: "Lightning-fast tools for everyday life",
+    title: "Quick tools, nothing to install",
     description:
-      "Stop hunting for separate apps. Extract text from a PDF, resize a profile photo, remove an image background or convert documents on the fly — results in seconds, no downloads, no technical skills required.",
+      "Extract text from PDFs and photos, resize images to presets or exact pixels, and crop, rotate, flip or adjust photos right in your browser.",
   },
   {
-    title: "One account, endless possibilities",
+    title: "One account for everything",
     description:
-      "Shop for the latest products and access digital tools from a single, easy-to-use account. Manage your orders, unlock premium features and enjoy a consistent experience whether you're buying, editing or creating.",
+      "Track your orders, save delivery addresses, manage your subscription and see your account activity from one profile. Sign in with a password, with Google or with your face.",
   },
   {
-    title: "Exclusive benefits with Elvate Premium",
+    title: "A subscription for the tools",
     description:
-      "Members enjoy discounts on every purchase, enhanced limits on digital services, priority support and early access to new features and products.",
+      "A 1, 6 or 12 month plan unlocks the digital tools. You can see every billing period and turn off auto-renew whenever you like.",
   },
   {
-    title: "Security, privacy and satisfaction — guaranteed",
+    title: "Pay the way you prefer",
     description:
-      "Industry-leading security, end-to-end encryption and transparent privacy policies. Pay securely, get fast delivery, and use our tools knowing your files are never shared or sold.",
+      "Pay cash on delivery, or pay by card through Stripe's secure checkout. Elvate never sees or stores your card number.",
   },
   {
-    title: "Constant innovation",
+    title: "Orders you can follow",
     description:
-      "We keep adding the latest gadgets, must-have accessories and cutting-edge digital features based on your feedback. Tell us what you want next and help us build the platform of tomorrow.",
+      "Every order has a status timeline, from confirmation and packing to the delivery man at your door, and you can review what you bought once it arrives.",
   },
 ];
 

@@ -16,7 +16,7 @@ import {
   YAxis,
 } from "recharts";
 import api from "@/lib/authAxios";
-import { formatDateTime, formatMoney } from "@/lib/format";
+import { formatDateTime, formatMoney, PLAN_LABELS } from "@/lib/format";
 import { PageShell } from "@/components/shared/PageShell";
 import { FormMessage } from "@/components/forms/FormMessage";
 import { ChartCard } from "@/components/admin/ChartCard";
@@ -34,6 +34,17 @@ type Stats = {
   byDay: { date: string; count: number | string; sum: number | string }[];
   recentPayments: Payment[];
 };
+
+/** `GET /subscriptions/paymentsPlanStats` (amounts in the subscription currency) */
+type Plan = "1m" | "6m" | "12m";
+type PlanStats = {
+  totalPayments: number;
+  totalAmount: number;
+  planStats: Record<Plan, number>;
+  planPercent: Record<Plan, number>;
+  planPaymentStats: Record<Plan, number>;
+};
+const PLANS: Plan[] = ["1m", "6m", "12m"];
 
 const columns: DataTableColumn<Payment>[] = [
   { key: "sl", header: "#", align: "center", className: "w-12 text-muted-foreground", cell: (_, i) => i + 1 },
@@ -56,6 +67,7 @@ const columns: DataTableColumn<Payment>[] = [
 
 export default function PaymentStatsClient() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [planStats, setPlanStats] = useState<PlanStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,6 +77,11 @@ export default function PaymentStatsClient() {
       .then((res) => !cancelled && setStats(res.data))
       .catch(() => !cancelled && setStats(null))
       .finally(() => !cancelled && setLoading(false));
+    // Separate request: if it fails, the rest of the page still renders.
+    api
+      .get<PlanStats>("/subscriptions/paymentsPlanStats")
+      .then((res) => !cancelled && setPlanStats(res.data))
+      .catch(() => !cancelled && setPlanStats(null));
     return () => {
       cancelled = true;
     };
@@ -72,6 +89,13 @@ export default function PaymentStatsClient() {
 
   const byDay = stats ? stats.byDay.map((d) => ({ date: d.date, count: Number(d.count), sum: Number(d.sum) })) : [];
   const byCurrency = stats ? stats.amountByCurrency.map((c) => ({ name: c.currency.toUpperCase(), value: c.sum })) : [];
+  const byPlan = planStats
+    ? PLANS.map((p) => ({
+        name: PLAN_LABELS[p],
+        revenue: Number(planStats.planPaymentStats?.[p] ?? 0),
+        subscriptions: Number(planStats.planStats?.[p] ?? 0),
+      }))
+    : [];
 
   return (
     <PageShell width="xl" title="Payment statistics" description="Volume, revenue and the most recent payments.">
@@ -126,6 +150,34 @@ export default function PaymentStatsClient() {
               </ResponsiveContainer>
             </ChartCard>
           </div>
+          {planStats ? (
+            <ChartCard title="Revenue by plan">
+              <div className="grid gap-4 lg:grid-cols-[1fr_16rem] lg:items-center">
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={byPlan}>
+                    <CartesianGrid {...gridProps} />
+                    <XAxis dataKey="name" {...axisProps} />
+                    <YAxis {...axisProps} />
+                    <Tooltip {...tooltipProps} formatter={(v) => formatMoney(Number(v))} />
+                    <Bar dataKey="revenue" name="Revenue" radius={[6, 6, 0, 0]}>
+                      {byPlan.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                <dl className="grid grid-cols-3 gap-3 lg:grid-cols-1">
+                  {byPlan.map((p) => (
+                    <div key={p.name} className="rounded-lg border p-3">
+                      <dt className="text-sm text-muted-foreground">{p.name}</dt>
+                      <dd className="font-heading text-lg font-semibold tabular-nums">{formatMoney(p.revenue)}</dd>
+                      <dd className="text-xs text-muted-foreground">
+                        {p.subscriptions} {p.subscriptions === 1 ? "subscription" : "subscriptions"}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </ChartCard>
+          ) : null}
           <section className="grid gap-3">
             <h2 className="text-lg font-semibold">Recent payments</h2>
             <DataTable columns={columns} rows={stats.recentPayments} rowKey={(p) => p.id} emptyMessage="No recent payments." caption="Recent payments" />

@@ -1,3 +1,4 @@
+import "server-only";
 import { cookies } from "next/headers";
 import { decryptSessionCookie } from "./jose-cookie";
 import { Role } from "./enums/role.enum";
@@ -8,11 +9,28 @@ export type Session = {
     name: string;
     role: Role;
     email: string;
-    profileImage: string;
+    /** Stored file name; never shown (pictures come from `avatarUrl`). */
+    profileImage?: string;
+    /** BE-28: `/media/me/avatar?size=xs&v=…`, or null without a picture. */
+    avatarUrl?: string | null;
   };
   accessToken: string;
   refreshToken: string;
 };
+
+/** The logged-in user as client components may see it. Never the tokens. */
+export type SessionUser = Session["user"];
+
+/**
+ * Picks the fields a client component needs. Anything passed from a server
+ * component to a client component ends up in the page HTML, so never pass
+ * the whole session (it holds the access and refresh tokens).
+ */
+export function toSessionUser(session: Session | null): SessionUser | null {
+  if (!session?.user) return null;
+  const { id, name, role, email, avatarUrl } = session.user;
+  return { id, name, role, email, avatarUrl };
+}
 
 export async function getSession() {
   const cookie = (await cookies()).get("session")?.value;

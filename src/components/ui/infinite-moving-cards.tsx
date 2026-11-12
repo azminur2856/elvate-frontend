@@ -37,17 +37,21 @@ export const InfiniteMovingCards = ({
   className?: string;
 }) => {
   const reduced = useReducedMotion();
-  const [start, setStart] = useState(false);
+  // The server cannot know prefers-reduced-motion: the first render matches the
+  // server's marquee markup (no hydration mismatch), then we switch after mount.
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!reduced) setStart(true);
-  }, [reduced]);
+    setMounted(true);
+  }, []);
 
-  if (reduced) {
+  const start = mounted && !reduced;
+
+  if (mounted && reduced) {
     return (
       <ul className={cn("flex snap-x gap-4 overflow-x-auto py-4", className)}>
-        {items.map((item) => (
-          <li key={item.name} className="snap-start">
+        {items.map((item, i) => (
+          <li key={`${item.name}-${i}`} className="snap-start">
             <TestimonialCard item={item} />
           </li>
         ))}
@@ -77,14 +81,14 @@ export const InfiniteMovingCards = ({
           pauseOnHover && "hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]"
         )}
       >
-        {items.map((item) => (
-          <li key={item.name}>
+        {items.map((item, i) => (
+          <li key={`${item.name}-${i}`}>
             <TestimonialCard item={item} />
           </li>
         ))}
         {/* Duplicate set for the seamless loop; hidden from assistive tech. */}
-        {items.map((item) => (
-          <li key={`${item.name}-dup`} aria-hidden="true">
+        {items.map((item, i) => (
+          <li key={`${item.name}-${i}-dup`} aria-hidden="true">
             <TestimonialCard item={item} />
           </li>
         ))}

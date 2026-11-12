@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
+import { PASSWORD_HINT, PASSWORD_MIN_LENGTH, passwordProblem } from "@/lib/password";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,7 @@ export default function ChangePasswordModal({ open, onClose }: Props) {
   const [rePassword, setRePassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
+  const [passwordTouched, setPasswordTouched] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -34,11 +36,13 @@ export default function ChangePasswordModal({ open, onClose }: Props) {
       setNewPassword("");
       setRePassword("");
       setErrMsg("");
+      setPasswordTouched(false);
     }
   }, [open]);
 
   const mismatch =
     newPassword.length > 0 && rePassword.length > 0 && newPassword !== rePassword;
+  const passwordError = newPassword ? passwordProblem(newPassword) : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,8 +51,10 @@ export default function ChangePasswordModal({ open, onClose }: Props) {
       setErrMsg("All fields are required.");
       return;
     }
-    if (newPassword.length < 6) {
-      setErrMsg("New password must be at least 6 characters.");
+    const problem = passwordProblem(newPassword);
+    if (problem) {
+      setPasswordTouched(true);
+      setErrMsg(problem);
       return;
     }
     if (newPassword !== rePassword) {
@@ -92,7 +98,8 @@ export default function ChangePasswordModal({ open, onClose }: Props) {
           <FormField
             id="new-password"
             label="New password"
-            hint="At least 6 characters."
+            hint={PASSWORD_HINT}
+            error={passwordTouched ? passwordError : undefined}
             required
           >
             <Input
@@ -100,6 +107,8 @@ export default function ChangePasswordModal({ open, onClose }: Props) {
               autoComplete="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              onBlur={() => setPasswordTouched(true)}
+              minLength={PASSWORD_MIN_LENGTH}
             />
           </FormField>
           <FormField

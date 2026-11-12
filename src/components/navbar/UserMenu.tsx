@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { LogOut } from "lucide-react";
-import type { Session } from "@/lib/session";
+import type { SessionUser } from "@/lib/session";
 import { useLogout } from "@/hooks/useLogout";
-import { getUserMenuItems } from "@/components/navbar/nav-config";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getUserMenuItems, type NavRole } from "@/components/navbar/nav-config";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,36 +16,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const IMAGEKIT = process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT;
-
-export function profileImageUrl(user: Session["user"]): string | undefined {
-  if (!IMAGEKIT || !user.profileImage) return undefined;
-  if (user.profileImage === "profile.png") {
-    return `${IMAGEKIT}/user_profile_image/${user.profileImage}`;
-  }
-  return `${IMAGEKIT}/user_profile_image/user_${user.id}/${user.profileImage}`;
-}
-
-export function initials(name: string | undefined): string {
-  if (!name) return "?";
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]!.toUpperCase())
-    .join("");
-}
+export { initials } from "@/lib/media";
 
 export function UserMenu({
-  session,
-  isAdmin,
+  user,
+  role,
 }: {
-  session: Session;
-  isAdmin: boolean;
+  user: SessionUser;
+  role: NavRole;
 }) {
   const { logout, loading } = useLogout();
-  const items = getUserMenuItems(isAdmin);
-  const { user } = session;
+  const items = getUserMenuItems(role);
 
   return (
     <DropdownMenu>
@@ -56,10 +37,7 @@ export function UserMenu({
           className="rounded-full"
           aria-label={`Account menu for ${user.name}`}
         >
-          <Avatar className="size-8">
-            <AvatarImage src={profileImageUrl(user)} alt="" />
-            <AvatarFallback className="text-xs">{initials(user.name)}</AvatarFallback>
-          </Avatar>
+          <UserAvatar name={user.name} avatarUrl={user.avatarUrl ?? null} size="xs" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

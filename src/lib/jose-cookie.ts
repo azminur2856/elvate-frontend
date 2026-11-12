@@ -1,4 +1,5 @@
 // lib/jose-cookie.ts
+import "server-only";
 import { jwtDecrypt } from "jose";
 
 // You should get your secret from env just like backend!

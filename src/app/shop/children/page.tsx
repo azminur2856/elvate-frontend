@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import { Baby } from "lucide-react";
-import { ComingSoon } from "@/components/shared/ComingSoon";
+import { CatalogPage, type RawSearchParams } from "@/components/shop/catalog/CatalogPage";
 
-export const metadata: Metadata = { title: "Children's collection" };
+export const metadata: Metadata = {
+  title: "Children",
+  description: "Comfortable kidswear and shoes for boys and girls. Shop online at Elvate with cash on delivery.",
+};
 
-export default function ChildrenPage() {
-  return (
-    <ComingSoon
-      title="Children's collection coming soon"
-      description="An exciting selection of products and offers for kids is on the way."
-      icon={Baby}
-      backHref="/shop"
-      backLabel="Back to shop"
-    />
-  );
+export default async function ChildrenPage({ searchParams }: { searchParams: Promise<RawSearchParams> }) {
+  return <CatalogPage slug="children" searchParams={await searchParams} description="Comfortable kidswear and shoes for boys and girls." />;
 }

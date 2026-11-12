@@ -74,7 +74,7 @@ export default function PdfToTextClient() {
           <DropZone
             inputRef={tool.inputRef}
             accept=".pdf"
-            acceptLabel="PDF"
+            acceptLabel="PDF, up to 10 MB"
             onFile={selectFile}
             icon={FileText}
             title="Upload a PDF"

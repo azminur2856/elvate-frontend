@@ -1,26 +1,51 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import type { Session } from "@/lib/session";
-import { Role } from "@/lib/enums/role.enum";
+import { usePathname } from "next/navigation";
+import api from "@/lib/authAxios";
+import { isShopManager } from "@/lib/enums/role.enum";
+import { REVIEWS_CHANGED_EVENT } from "@/lib/events";
+import type { SessionUser } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { loginHref } from "@/lib/redirect";
 import { CartButton } from "./CartButton";
 import { DesktopNav } from "./DesktopNav";
 import { MobileNav } from "./MobileNav";
 import { SearchInput } from "./SearchInput";
 import { ThemeToggle } from "./ThemeToggle";
 import { UserMenu } from "./UserMenu";
-import { getNavGroups } from "./nav-config";
+import { applyBadges, getNavGroups } from "./nav-config";
 
 type Props = {
   className?: string;
-  session: Session | null;
+  user: SessionUser | null;
 };
 
-export default function NavbarClient({ className, session }: Props) {
-  const isAdmin = session?.user?.role === Role.ADMIN;
-  const groups = getNavGroups(isAdmin);
+
+/** Pending review count for ADMIN / STAFF (badge on "Reviews"). */
+function usePendingReviews(enabled: boolean): number | undefined {
+  const [count, setCount] = useState<number>();
+  useEffect(() => {
+    if (!enabled) return;
+    const load = () =>
+      api
+        .get<{ total: number }>("/admin/reviews", { params: { status: "PENDING", page: 1, pageSize: 1 } })
+        .then((res) => setCount(res.data.total))
+        .catch(() => setCount(undefined));
+    void load();
+    window.addEventListener(REVIEWS_CHANGED_EVENT, load);
+    return () => window.removeEventListener(REVIEWS_CHANGED_EVENT, load);
+  }, [enabled]);
+  return count;
+}
+
+export default function NavbarClient({ className, user }: Props) {
+  const pathname = usePathname();
+  const role = user?.role ?? null;
+  const pendingReviews = usePendingReviews(isShopManager(role));
+  const groups = applyBadges(getNavGroups(role), { "/admin/reviews": pendingReviews });
 
   return (
     <header
@@ -35,8 +60,8 @@ export default function NavbarClient({ className, session }: Props) {
       <div className="mx-auto flex h-full max-w-7xl items-center gap-2 px-3 sm:gap-3 sm:px-6">
         <MobileNav
           groups={groups}
-          session={session}
-          isAdmin={isAdmin}
+          user={user}
+          role={role}
           className="lg:hidden"
         />
 
@@ -50,17 +75,19 @@ export default function NavbarClient({ className, session }: Props) {
         <DesktopNav groups={groups} className="mx-auto hidden lg:flex" />
 
         <div className="ml-auto flex items-center gap-1 sm:gap-2 lg:ml-0">
-          <SearchInput className="hidden md:flex" />
+          <Suspense fallback={<div className="hidden h-9 w-52 md:block lg:w-56" />}>
+            <SearchInput className="hidden md:flex" />
+          </Suspense>
           <CartButton />
           <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
             <Link href="/shop">Shop</Link>
           </Button>
           <ThemeToggle />
-          {session ? (
-            <UserMenu session={session} isAdmin={isAdmin} />
+          {user ? (
+            <UserMenu user={user} role={role} />
           ) : (
             <Button asChild size="sm">
-              <Link href="/login">Log in</Link>
+              <Link href={loginHref(pathname)}>Log in</Link>
             </Button>
           )}
         </div>

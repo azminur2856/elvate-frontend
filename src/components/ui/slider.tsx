@@ -15,8 +15,15 @@ function Slider({
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledBy,
   "aria-valuetext": ariaValueText,
+  thumbLabels,
+  thumbValueTexts,
   ...props
-}: React.ComponentProps<typeof SliderPrimitive.Root>) {
+}: React.ComponentProps<typeof SliderPrimitive.Root> & {
+  /** Per-thumb accessible names for range sliders ("Minimum price", "Maximum price"). */
+  thumbLabels?: string[]
+  /** Per-thumb value text ("৳1,200"). */
+  thumbValueTexts?: string[]
+}) {
   const _values = React.useMemo(
     () =>
       Array.isArray(value)
@@ -60,9 +67,9 @@ function Slider({
           data-slot="slider-thumb"
           key={index}
           id={index === 0 ? id : undefined}
-          aria-label={ariaLabel}
-          aria-labelledby={ariaLabelledBy}
-          aria-valuetext={ariaValueText}
+          aria-label={thumbLabels?.[index] ?? ariaLabel}
+          aria-labelledby={thumbLabels?.[index] ? undefined : ariaLabelledBy}
+          aria-valuetext={thumbValueTexts?.[index] ?? ariaValueText}
           className="block size-4 shrink-0 rounded-full border border-primary bg-background shadow-sm ring-ring/50 transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
         />
       ))}

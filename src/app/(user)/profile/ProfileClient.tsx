@@ -6,11 +6,11 @@ import { Camera, Mail, Phone } from "lucide-react";
 import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
 import { formatDate, formatDateTime } from "@/lib/format";
-import { initials } from "@/components/navbar/UserMenu";
+import { useFeatureFlags } from "@/components/settings/FeatureFlagsProvider";
 import { PageShell } from "@/components/shared/PageShell";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { FormMessage } from "@/components/forms/FormMessage";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import UpdateUserModal from "@/components/modal/UpdateUserModal";
 import ChangePasswordModal from "@/components/modal/ChangePasswordModal";
 import PhoneVerificationModal from "@/components/modal/PhoneVerificationModal";
-import FaceVerificationModal from "@/components/modal/FaceVerificationModal";
+import FaceVerificationModal, { FACE_SETUP_TEXT } from "@/components/modal/FaceVerificationModal";
 import ProfileImageUploadModal from "@/components/modal/ProfileImageUploadModal";
 
 type UserProfile = {
@@ -32,8 +32,11 @@ type UserProfile = {
   isActive: boolean;
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
-  profileImage?: string;
+  /** BE-28: our own path to the picture, `null` when there is none. */
+  avatarUrl: string | null;
   isFaceVerified?: boolean;
+  /** False for Google-only accounts. */
+  hasPassword?: boolean;
   createdAt: string;
   updatedAt: string;
   lastLoginAt?: string;
@@ -58,9 +61,9 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 const NA = <span className="text-muted-foreground">Not set</span>;
 
+
 export default function ProfileClient() {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [imgSrc, setImgSrc] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
@@ -68,6 +71,7 @@ export default function ProfileClient() {
   const [showUpdate, setShowUpdate] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [phoneModalOpen, setPhoneModalOpen] = useState(false);
+  const { smsOtpEnabled, faceLoginEnabled, loading: flagsLoading } = useFeatureFlags();
   const [faceModalOpen, setFaceModalOpen] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
@@ -91,22 +95,6 @@ export default function ProfileClient() {
       mounted = false;
     };
   }, []);
-
-  // Profile image is served as a blob behind auth; keep it as an object URL.
-  useEffect(() => {
-    if (!user) return;
-    let url: string | undefined;
-    api
-      .get("/users/profileImage", { responseType: "blob" })
-      .then((res) => {
-        url = URL.createObjectURL(res.data);
-        setImgSrc(url);
-      })
-      .catch(() => setImgSrc(undefined));
-    return () => {
-      if (url) URL.revokeObjectURL(url);
-    };
-  }, [user]);
 
   if (loading) {
     return (
@@ -136,10 +124,7 @@ export default function ProfileClient() {
       <Card className="w-full">
         <CardContent className="flex flex-col items-center pt-6">
           <div className="relative">
-            <Avatar className="size-32 border-2 border-primary">
-              <AvatarImage src={imgSrc} alt="" />
-              <AvatarFallback className="text-3xl">{initials(name)}</AvatarFallback>
-            </Avatar>
+            <UserAvatar name={name} avatarUrl={user.avatarUrl} size="md" className="border-2 border-primary" />
             <Button
               size="icon-sm"
               className="absolute -bottom-1 -right-1 rounded-full shadow"
@@ -173,17 +158,29 @@ export default function ProfileClient() {
                 <StatusBadge ok={user.isPhoneVerified} okLabel="Verified" noLabel="Not verified" />
               ) : null}
               {user.phone && !user.isPhoneVerified ? (
-                <Button variant="link" size="sm" className="h-auto p-0 text-link" onClick={() => setPhoneModalOpen(true)}>
-                  Verify now
-                </Button>
+                // SMS codes only while the admin switch is on (read as off while loading).
+                smsOtpEnabled ? (
+                  <Button variant="link" size="sm" className="h-auto p-0 text-link" onClick={() => setPhoneModalOpen(true)}>
+                    Verify now
+                  </Button>
+                ) : (
+                  <span className="text-sm text-muted-foreground">Phone verification is currently unavailable</span>
+                )
               ) : null}
             </Row>
             <Row label="Face login">
-              <StatusBadge ok={Boolean(user.isFaceVerified)} okLabel="Verified" noLabel="Not set up" />
-              {!user.isFaceVerified ? (
+              <StatusBadge ok={Boolean(user.isFaceVerified)} okLabel="On" noLabel="Not set up" />
+              {/* Admin switch (FE-27): no setup while off; nothing shown until it is known. */}
+              {user.isFaceVerified ? (
+                !faceLoginEnabled && !flagsLoading ? (
+                  <span className="text-sm text-muted-foreground">Temporarily unavailable</span>
+                ) : null
+              ) : faceLoginEnabled ? (
                 <Button variant="link" size="sm" className="h-auto p-0 text-link" onClick={() => setFaceModalOpen(true)}>
                   Set up face login
                 </Button>
+              ) : !flagsLoading ? (
+                <span className="basis-full text-sm text-muted-foreground">{FACE_SETUP_TEXT.unavailable}</span>
               ) : null}
             </Row>
             <Row label="Subscription">
@@ -239,6 +236,12 @@ export default function ProfileClient() {
         open={faceModalOpen}
         onClose={() => setFaceModalOpen(false)}
         onVerified={() => void refetchUser()}
+        hasPicture={user.avatarUrl !== null}
+        hasPassword={user.hasPassword !== false}
+        onAddPicture={() => {
+          setFaceModalOpen(false);
+          setShowProfileModal(true);
+        }}
       />
       <ProfileImageUploadModal
         open={showProfileModal}

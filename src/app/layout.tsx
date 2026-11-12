@@ -5,6 +5,7 @@ import { Providers } from "./providers";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import { ThemedToaster } from "@/components/ui/themed-toaster";
+import { getSession } from "@/lib/session";
 
 // Poppins is not a variable font on Google Fonts: weights must be listed.
 const poppins = Poppins({
@@ -49,11 +50,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession();
   return (
     <html
       lang="en"
@@ -61,7 +63,7 @@ export default function RootLayout({
       className={`${poppins.variable} ${openSans.variable}`}
     >
       <body>
-        <Providers>
+        <Providers loggedIn={Boolean(session)}>
           <a
             href="#main"
             className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"

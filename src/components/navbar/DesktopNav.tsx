@@ -25,7 +25,15 @@ function LinkItem({ item, active }: { item: NavLink; active: boolean }) {
           active && "bg-accent/70 font-medium"
         )}
       >
-        <span className="block leading-tight">{item.label}</span>
+        <span className="flex items-center justify-between gap-2 leading-tight">
+          {item.label}
+          {item.badge ? (
+            <span className="min-w-5 rounded-full bg-brand px-1.5 text-center text-xs font-semibold text-brand-foreground tabular-nums">
+              {item.badge}
+              <span className="sr-only"> {item.badgeLabel ?? "new"}</span>
+            </span>
+          ) : null}
+        </span>
         {item.description ? (
           <span className="mt-0.5 block text-xs text-muted-foreground">
             {item.description}
@@ -106,12 +114,14 @@ export function DesktopNav({
                   </div>
                 ) : (
                   <ul className="grid w-72 gap-0.5 p-2">
-                    <li>
-                      <LinkItem
-                        item={{ label: `All ${group.label.toLowerCase()}`, href: group.href }}
-                        active={pathname === group.href}
-                      />
-                    </li>
+                    {group.hideAllLink ? null : (
+                      <li>
+                        <LinkItem
+                          item={{ label: `All ${group.label.toLowerCase()}`, href: group.href }}
+                          active={pathname === group.href}
+                        />
+                      </li>
+                    )}
                     {group.items!.map((item) => (
                       <li key={item.href}>
                         <LinkItem item={item} active={isActivePath(pathname, item.href)} />

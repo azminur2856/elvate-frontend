@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import { getErrorMessage } from "@/lib/errors";
+import { PASSWORD_HINT, PASSWORD_MIN_LENGTH, passwordProblem } from "@/lib/password";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { FormField } from "@/components/forms/FormField";
 import { FormMessage } from "@/components/forms/FormMessage";
@@ -22,8 +23,10 @@ export default function ResetPasswordClient() {
   const [rePassword, setRePassword] = useState("");
   const [status, setStatus] = useState<Status>(null);
   const [loading, setLoading] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
 
   const mismatch = rePassword.length > 0 && newPassword !== rePassword;
+  const passwordError = newPassword ? passwordProblem(newPassword) : null;
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +35,10 @@ export default function ResetPasswordClient() {
       setStatus({ type: "error", text: "This reset link is invalid or missing its token." });
       return;
     }
-    if (newPassword.length < 6) {
-      setStatus({ type: "error", text: "Password must be at least 6 characters." });
+    const problem = passwordProblem(newPassword);
+    if (problem) {
+      setPasswordTouched(true);
+      setStatus({ type: "error", text: problem });
       return;
     }
     if (newPassword !== rePassword) {
@@ -71,12 +76,20 @@ export default function ResetPasswordClient() {
     >
       <form onSubmit={handleReset} className="grid gap-4" noValidate>
         {status ? <FormMessage variant={status.type}>{status.text}</FormMessage> : null}
-        <FormField id="new-password" label="New password" hint="At least 6 characters." required>
+        <FormField
+          id="new-password"
+          label="New password"
+          hint={PASSWORD_HINT}
+          error={passwordTouched ? passwordError : undefined}
+          required
+        >
           <Input
             type="password"
             autoComplete="new-password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            onBlur={() => setPasswordTouched(true)}
+            minLength={PASSWORD_MIN_LENGTH}
             required
           />
         </FormField>
@@ -98,7 +111,7 @@ export default function ResetPasswordClient() {
           type="submit"
           className="w-full"
           loading={loading}
-          disabled={!newPassword || !rePassword || mismatch || newPassword.length < 6}
+          disabled={!newPassword || !rePassword || mismatch || Boolean(passwordError)}
         >
           Reset password
         </Button>

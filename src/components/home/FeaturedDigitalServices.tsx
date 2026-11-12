@@ -22,7 +22,7 @@ function FeaturedDigitalServices() {
         <SectionHeading
           id="featured-services"
           eyebrow="Featured digital services"
-          title="Boost your productivity with AI tools"
+          title="Get everyday file jobs done faster"
         />
         <ul className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {featured.map((service: DigitalService) => (

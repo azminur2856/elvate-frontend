@@ -24,10 +24,12 @@ export const BackgroundGradient = ({
   const reduced = useReducedMotion();
   const shouldAnimate = animate && !reduced;
 
-  const motionProps = shouldAnimate
+  // The server cannot know prefers-reduced-motion, so the rendered styles stay
+  // the same either way (no hydration mismatch); only the movement depends on it.
+  const motionProps = animate
     ? {
         initial: { backgroundPosition: "0% 50%" },
-        animate: { backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] },
+        animate: shouldAnimate ? { backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] } : undefined,
         transition: { duration: 5, repeat: Infinity, repeatType: "reverse" as const },
         style: { backgroundSize: "400% 400%" },
       }

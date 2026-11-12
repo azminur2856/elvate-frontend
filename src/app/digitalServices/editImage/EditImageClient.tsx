@@ -5,6 +5,7 @@ import Cropper, { type Area } from "react-easy-crop";
 import { ImageIcon, RotateCcw, Save, Sparkles } from "lucide-react";
 import { toast } from "react-hot-toast";
 import api from "@/lib/authAxios";
+import { IMAGE_SIDE_MAX, IMAGE_SIDE_MIN, IMAGE_SIDE_RULE, isValidImageSide } from "@/lib/image-limits";
 import { useToolUpload } from "@/hooks/useToolUpload";
 import SubscriptionRequiredModal from "@/components/modal/SubscriptionRequiredModal";
 import { DropZone } from "@/components/tools/DropZone";
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 
 type EditOptions = {
@@ -28,7 +30,30 @@ type EditOptions = {
   blur?: number;
 };
 
-const ACCEPT = ["image/png", "image/jpeg", "image/jpg", "image/heic"];
+const ACCEPT = ["image/png", "image/jpeg", "image/jpg", "image/heic", "image/webp"];
+
+/** Clockwise quarter turns, the only rotations the API accepts. */
+const ROTATIONS = [0, 90, 180, 270] as const;
+
+type NaturalSize = { w: number; h: number };
+
+/**
+ * Whole-pixel crop box that stays inside the original image. Rounding the
+ * position and the size separately could end 1 px outside it, which the
+ * API rejects (backend SEC-03).
+ */
+function cropBox(area: Area, natural: NaturalSize | null) {
+  const left = Math.max(0, Math.floor(area.x));
+  const top = Math.max(0, Math.floor(area.y));
+  const maxWidth = natural ? natural.w - left : Infinity;
+  const maxHeight = natural ? natural.h - top : Infinity;
+  return {
+    left,
+    top,
+    width: Math.max(1, Math.min(Math.round(area.width), maxWidth)),
+    height: Math.max(1, Math.min(Math.round(area.height), maxHeight)),
+  };
+}
 
 const DEFAULT_EDIT: EditOptions = {
   brightness: 1,
@@ -82,13 +107,15 @@ function RangeControl({
 }
 
 export default function EditImageClient() {
-  const tool = useToolUpload({ accept: ACCEPT, acceptLabel: "JPG, PNG or HEIC" });
+  const tool = useToolUpload({ accept: ACCEPT, acceptLabel: "JPG, PNG, WebP or HEIC" });
   const [opts, setOpts] = useState<EditOptions>({ ...DEFAULT_EDIT });
   const [editedUrl, setEditedUrl] = useState<string | null>(null);
   const [cropMode, setCropMode] = useState(false);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedArea, setCroppedArea] = useState<Area | null>(null);
+  /** Pixel size of the original image (crop coordinates refer to it). */
+  const [natural, setNatural] = useState<NaturalSize | null>(null);
 
   const setOpt = <K extends keyof EditOptions>(key: K, value: EditOptions[K]) =>
     setOpts((o) => ({ ...o, [key]: value }));
@@ -98,6 +125,7 @@ export default function EditImageClient() {
     setEditedUrl(null);
     setCropMode(false);
     setCroppedArea(null);
+    setNatural(null);
     setCrop({ x: 0, y: 0 });
     setZoom(1);
   };
@@ -112,13 +140,21 @@ export default function EditImageClient() {
       async () => {
         if (!tool.file) return;
         const finalOpts: EditOptions = { ...opts };
+        const { width, height } = opts.resize ?? {};
+        if ((width !== undefined && !isValidImageSide(width)) || (height !== undefined && !isValidImageSide(height))) {
+          toast.error(`Resize: ${IMAGE_SIDE_RULE}`);
+          return;
+        }
+        // Only the sizes that were filled in; no empty `resize` object.
+        finalOpts.resize =
+          width || height ? { ...(width ? { width } : {}), ...(height ? { height } : {}) } : undefined;
         if (cropMode && croppedArea) {
-          finalOpts.crop = {
-            left: Math.round(croppedArea.x),
-            top: Math.round(croppedArea.y),
-            width: Math.round(croppedArea.width),
-            height: Math.round(croppedArea.height),
-          };
+          const box = cropBox(croppedArea, natural);
+          if (box.width > IMAGE_SIDE_MAX || box.height > IMAGE_SIDE_MAX) {
+            toast.error(`The crop area can be at most ${IMAGE_SIDE_MAX} pixels per side. Zoom in a little.`);
+            return;
+          }
+          finalOpts.crop = box;
         } else {
           finalOpts.crop = undefined;
         }
@@ -158,7 +194,9 @@ export default function EditImageClient() {
             {cropMode ? (
               <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-lg border border-border bg-muted">
                 <Cropper
-                  image={source}
+                  // Always the original: the API crops the uploaded file, not the preview.
+                  image={tool.preview}
+                  onMediaLoaded={(m) => setNatural({ w: m.naturalWidth, h: m.naturalHeight })}
                   crop={crop}
                   zoom={zoom}
                   aspect={4 / 3}
@@ -196,8 +234,8 @@ export default function EditImageClient() {
         ) : (
           <DropZone
             inputRef={tool.inputRef}
-            accept=".jpg,.jpeg,.png,.heic"
-            acceptLabel="JPG, PNG or HEIC"
+            accept=".jpg,.jpeg,.png,.webp,.heic"
+            acceptLabel="JPG, PNG, WebP or HEIC, up to 10 MB"
             onFile={(f) => {
               resetEdits();
               tool.select(f);
@@ -241,7 +279,9 @@ export default function EditImageClient() {
                     id="resize-w"
                     type="number"
                     inputMode="numeric"
-                    min={1}
+                    min={IMAGE_SIDE_MIN}
+                    max={IMAGE_SIDE_MAX}
+                    step={1}
                     value={opts.resize?.width ?? ""}
                     onChange={(e) =>
                       setOpt("resize", {
@@ -259,7 +299,9 @@ export default function EditImageClient() {
                     id="resize-h"
                     type="number"
                     inputMode="numeric"
-                    min={1}
+                    min={IMAGE_SIDE_MIN}
+                    max={IMAGE_SIDE_MAX}
+                    step={1}
                     value={opts.resize?.height ?? ""}
                     onChange={(e) =>
                       setOpt("resize", {
@@ -273,17 +315,23 @@ export default function EditImageClient() {
             </fieldset>
 
             <div className="grid gap-1.5">
-              <Label htmlFor="rotate">Rotate (degrees)</Label>
-              <Input
-                id="rotate"
-                type="number"
-                inputMode="numeric"
-                min={-360}
-                max={360}
-                className="w-32"
-                value={opts.rotate ?? 0}
-                onChange={(e) => setOpt("rotate", Number(e.target.value))}
-              />
+              <Label htmlFor="rotate">Rotate (clockwise)</Label>
+              {/* The API only accepts quarter turns (SEC-03). */}
+              <Select
+                value={String(opts.rotate ?? 0)}
+                onValueChange={(v) => setOpt("rotate", Number(v))}
+              >
+                <SelectTrigger id="rotate" className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ROTATIONS.map((deg) => (
+                    <SelectItem key={deg} value={String(deg)}>
+                      {deg === 0 ? "No rotation" : `${deg}°`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <RangeControl

@@ -1,11 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Pencil, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
-import { Role } from "@/lib/enums/role.enum";
+import { Role, ROLE_INFO } from "@/lib/enums/role.enum";
 import { useDebounce } from "@/hooks/useDebounce";
 import { PageShell } from "@/components/shared/PageShell";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -114,7 +115,7 @@ export default function ManageUsersClient() {
       className: "w-12 text-muted-foreground",
       cell: (_, i) => (page - 1) * PAGE_SIZE + i + 1,
     },
-    { key: "name", header: "Name", cell: (u) => <span className="font-medium">{fullName(u)}</span> },
+    { key: "name", header: "Name", cell: (u) => <Link href={`/admin/users/${u.id}`} className="font-medium text-link hover:underline">{fullName(u)}</Link> },
     { key: "email", header: "Email", cell: (u) => u.email },
     {
       key: "role",
@@ -284,13 +285,16 @@ export default function ManageUsersClient() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.values(Role).map((r) => (
+                {[Role.BUYER, Role.STAFF, Role.DELIVERY_MAN, Role.ADMIN].map((r) => (
                   <SelectItem key={r} value={r}>
-                    {r}
+                    {ROLE_INFO[r].label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              {ROLE_INFO[selectedRole]?.description}
+            </p>
           </div>
         ) : null}
       </ConfirmDialog>
