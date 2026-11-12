@@ -12,6 +12,7 @@ import { AddressBook } from "@/components/address/AddressBook";
 import ChangePasswordModal from "@/components/modal/ChangePasswordModal";
 import { DeleteAccount } from "@/components/settings/DeleteAccount";
 import { DeviceSessions } from "@/components/settings/DeviceSessions";
+import { FaceLoginSetting } from "@/components/settings/FaceLoginSetting";
 import { LocalTime } from "@/components/shared/LocalTime";
 import { PageShell } from "@/components/shared/PageShell";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -109,7 +110,10 @@ function AccountTab() {
         <div>
           <dt className="text-sm text-muted-foreground">Face login</dt>
           <dd>
-            <StatusBadge ok={Boolean(profile.isFaceVerified)} okLabel="Set up" noLabel="Not set up" />
+            <FaceLoginSetting
+              enabled={Boolean(profile.isFaceVerified)}
+              onChange={(enabled) => setProfile((p) => (p ? { ...p, isFaceVerified: enabled } : p))}
+            />
           </dd>
         </div>
       </dl>

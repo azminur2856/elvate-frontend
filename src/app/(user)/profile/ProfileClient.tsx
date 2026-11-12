@@ -186,7 +186,7 @@ export default function ProfileClient() {
               ) : null}
             </Row>
             <Row label="Face login">
-              <StatusBadge ok={Boolean(user.isFaceVerified)} okLabel="Verified" noLabel="Not set up" />
+              <StatusBadge ok={Boolean(user.isFaceVerified)} okLabel="On" noLabel="Not set up" />
               {!user.isFaceVerified ? (
                 <Button variant="link" size="sm" className="h-auto p-0 text-link" onClick={() => setFaceModalOpen(true)}>
                   Set up face login
