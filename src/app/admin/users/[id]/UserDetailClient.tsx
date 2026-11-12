@@ -10,9 +10,8 @@ import { formatDate, formatDateTime } from "@/lib/format";
 import { PageShell } from "@/components/shared/PageShell";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { userFullName } from "@/components/admin/UserPickerDialog";
-import { initials } from "@/components/navbar/UserMenu";
 import { FormMessage } from "@/components/forms/FormMessage";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +37,8 @@ type UserDetail = {
   isPhoneVerified: boolean;
   isFaceVerified: boolean;
   profileImage: string | null;
+  /** BE-28: `/media/users/<id>/avatar?size=sm&v=…`, or null. */
+  avatarUrl?: string | null;
   createdAt: string;
   updatedAt: string;
   lastLoginAt: string | null;
@@ -182,10 +183,7 @@ export default function UserDetailClient({ id }: { id: string }) {
     <PageShell width="xl">
       {back}
       <header className="mb-8 flex flex-wrap items-center gap-4">
-        <Avatar className="size-16">
-          <AvatarImage src={photoUrl(user)} alt="" />
-          <AvatarFallback className="text-lg">{initials(name)}</AvatarFallback>
-        </Avatar>
+        <UserAvatar name={name} avatarUrl={user.avatarUrl} legacySrc={photoUrl(user)} className="size-16 text-lg" />
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-3xl font-bold tracking-tight">{name}</h1>
           <p className="truncate text-muted-foreground">{user.email}</p>

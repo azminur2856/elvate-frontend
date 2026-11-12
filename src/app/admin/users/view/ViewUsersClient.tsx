@@ -9,9 +9,11 @@ import html2canvas from "html2canvas";
 import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
 import { formatDate, formatMoney } from "@/lib/format";
+import { mediaSrc } from "@/lib/media";
 import { useDebounce } from "@/hooks/useDebounce";
 import { PageShell } from "@/components/shared/PageShell";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { UserAvatar } from "@/components/shared/UserAvatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -50,6 +52,8 @@ type User = {
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
   profileImage: string;
+  /** BE-28: `/media/users/<id>/avatar?size=sm&v=…`, or null. */
+  avatarUrl?: string | null;
   createdAt: string;
   totalPaid: number;
 };
@@ -76,6 +80,7 @@ const optionalFields: { key: FieldKey; label: string }[] = [
 ];
 
 function photoUrl(user: User): string | undefined {
+  if (user.avatarUrl !== undefined) return mediaSrc(user.avatarUrl);
   if (!user.profileImage) return undefined;
   if (user.profileImage.startsWith("http")) return user.profileImage;
   if (!IMAGEKIT) return undefined;
@@ -161,7 +166,12 @@ export default function ViewUsersClient() {
 
   const columns: DataTableColumn<User>[] = [
     { key: "sl", header: "#", align: "center", className: "w-12 text-muted-foreground", cell: (_, i) => (page - 1) * PAGE_SIZE + i + 1 },
-    { key: "name", header: "Name", cell: (u) => <Link href={`/admin/users/${u.id}`} className="font-medium text-link hover:underline">{u.firstName} {u.lastName}</Link> },
+    { key: "name", header: "Name", cell: (u) => (
+        <span className="flex items-center gap-2">
+          <UserAvatar name={`${u.firstName} ${u.lastName ?? ""}`} avatarUrl={u.avatarUrl} legacySrc={photoUrl(u)} className="size-8 text-xs" />
+          <Link href={`/admin/users/${u.id}`} className="font-medium text-link hover:underline">{u.firstName} {u.lastName}</Link>
+        </span>
+      ) },
     { key: "email", header: "Email", cell: (u) => u.email },
     { key: "totalPaid", header: "Total paid", numeric: true, cell: (u) => formatMoney(u.totalPaid) },
     { key: "active", header: "Active", align: "center", cell: (u) => <StatusBadge ok={u.isActive} /> },
