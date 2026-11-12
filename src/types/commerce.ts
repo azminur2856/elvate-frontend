@@ -26,7 +26,7 @@ export type ProductCard = {
   price: number;                         // regular price
   effectivePrice: number;                // flash sale > salePrice > price
   discountPercent: number;               // 0 when not discounted (rounded)
-  mainImage: string | null;              // ImageKit URL
+  mainImage: string | null;              // `/img/...` path (BE-28), served by our rewrite
   rating: number; reviewCount: number;   // approved reviews only
   inStock: boolean;
   isFeatured: boolean; isNewArrival: boolean; isOnSale: boolean;
