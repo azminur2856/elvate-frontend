@@ -5,6 +5,12 @@ import type { FaceStatus } from "@/components/shared/StatusIndicator";
 
 const FACE_API_SCRIPT =
   "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
+/**
+ * Subresource Integrity for the exact file above (hash published by jsDelivr
+ * for face-api.js@0.22.2). If the CDN ever serves different bytes, the
+ * browser refuses to run them and face checks fail closed.
+ */
+const FACE_API_SCRIPT_INTEGRITY = "sha256-XWbslTONf8w2XOFUgbhZm69LbiLJpiS3bUyoIaZpplk=";
 const FACE_API_MODELS = "https://justadudewhohacks.github.io/face-api.js/models";
 
 let loader: Promise<FaceApi | undefined> | null = null;
@@ -31,6 +37,9 @@ function loadFaceApi(): Promise<FaceApi | undefined> {
       }
       const script = document.createElement("script");
       script.src = FACE_API_SCRIPT;
+      script.integrity = FACE_API_SCRIPT_INTEGRITY;
+      script.crossOrigin = "anonymous";
+      script.referrerPolicy = "no-referrer";
       script.async = true;
       script.onload = () => void ready();
       script.onerror = () => resolve(undefined);
