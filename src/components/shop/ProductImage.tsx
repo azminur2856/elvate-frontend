@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image, { type ImageProps } from "next/image";
 import { ImageOff } from "lucide-react";
+import { isShopImagePath, shopImageLoader } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 /** Only ImageKit is whitelisted in next.config.ts `images.remotePatterns`. */
@@ -12,6 +13,16 @@ export function isOptimizableImage(src: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * How next/image should load a shop photo. `/img/...` (BE-28) gets sized
+ * URLs from the image CDN through our rewrite, so Vercel's optimiser (and its
+ * quota) is not used; other hosts load as they are.
+ */
+export function shopImageProps(src: string): Pick<ImageProps, "loader" | "unoptimized"> {
+  if (isShopImagePath(src)) return { loader: shopImageLoader };
+  return { unoptimized: !isOptimizableImage(src) };
 }
 
 type ProductImageProps = {
@@ -63,7 +74,7 @@ export function ProductImage({
         fill
         sizes={sizes}
         priority={priority}
-        unoptimized={!isOptimizableImage(src)}
+        {...shopImageProps(src)}
         onError={() => setFailedSrc(src)}
         className={cn("object-cover", className)}
       />

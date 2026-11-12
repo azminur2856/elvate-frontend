@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ProductImage as ProductImageData } from "@/types/commerce";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { isOptimizableImage, ProductImage } from "../ProductImage";
+import { ProductImage, shopImageProps } from "../ProductImage";
 
 /**
  * Main image + thumbnails. Keyboard: Tab to the image and use ← / →, or
@@ -99,7 +99,7 @@ export function ProductGallery({ images, name }: { images: ProductImageData[]; n
                   alt=""
                   fill
                   sizes="96px"
-                  unoptimized={!isOptimizableImage(img.url)}
+                  {...shopImageProps(img.url)}
                   className="object-cover"
                 />
               </button>
