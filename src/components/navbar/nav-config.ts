@@ -57,6 +57,7 @@ const ADMIN_SECTIONS: NavGroup["sections"] = [
       { label: "Products", href: "/admin/products/view" },
       { label: "Categories", href: "/admin/products/categories" },
       { label: "Orders", href: "/admin/orders/view" },
+      { label: "Deliveries", href: "/admin/deliveries" },
       { label: "Order stats", href: "/admin/orders/stats" },
       { label: "Coupons", href: "/admin/offers/coupons" },
       { label: "Flash sales", href: "/admin/offers/flash-sales" },
@@ -101,7 +102,8 @@ export function getNavGroups(role: NavRole): NavGroup[] {
 
 /** STAFF only sees the shop-running pages (see middleware STAFF_ADMIN_PATHS). */
 const STAFF_LINKS: NavLink[] = [
-  { label: "Orders", href: "/admin/orders/view", description: "Confirm, pack, ship and assign deliveries" },
+  { label: "Orders", href: "/admin/orders/view", description: "Confirm, pack, ship and assign a delivery man" },
+  { label: "Deliveries", href: "/admin/deliveries", description: "Follow deliveries, reassign and settle returns" },
   { label: "Order stats", href: "/admin/orders/stats", description: "Revenue, status mix and low stock" },
   { label: "Products", href: "/admin/products/view", description: "Catalogue, images, variants and stock" },
   { label: "Categories", href: "/admin/products/categories", description: "Category tree" },
@@ -114,6 +116,7 @@ export function getUserMenuItems(role: NavRole): NavLink[] {
     return [
       { label: "Profile", href: "/profile" },
       { label: "Orders", href: "/admin/orders/view" },
+      { label: "Deliveries", href: "/admin/deliveries" },
       { label: "Products", href: "/admin/products/view" },
       { label: "My orders", href: "/orders" },
       { label: "Activity logs", href: "/activity" },
@@ -125,7 +128,7 @@ export function getUserMenuItems(role: NavRole): NavLink[] {
       { label: "Profile", href: "/profile" },
       { label: "Dashboard", href: "/admin/dashboard" },
       { label: "Orders", href: "/admin/orders/view" },
-      { label: "Deliveries", href: "/delivery" },
+      { label: "Deliveries", href: "/admin/deliveries" },
       { label: "My orders", href: "/orders" },
       { label: "Activity logs", href: "/activity" },
       { label: "Settings", href: "/settings" },
