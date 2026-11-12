@@ -47,6 +47,9 @@ export function OrderCorrection({ order, onDone }: { order: OrderDetail; onDone:
 
   const needsCash = action === "DELIVERED" && order.paymentMethod === "COD" && order.paymentStatus !== "PAID";
 
+  /** A field's error goes away as soon as it is changed. */
+  const clearError = (key: keyof typeof errors) => setErrors((e) => (e[key] ? { ...e, [key]: undefined } : e));
+
   const review = (e: React.FormEvent) => {
     e.preventDefault();
     const next: typeof errors = {};
@@ -105,7 +108,13 @@ export function OrderCorrection({ order, onDone }: { order: OrderDetail; onDone:
             <Label htmlFor="correction-reason">
               Reason <span className="text-destructive">*</span>
             </Label>
-            <Select value={reason} onValueChange={(v) => setReason(v as CorrectionReason)}>
+            <Select
+              value={reason}
+              onValueChange={(v) => {
+                setReason(v as CorrectionReason);
+                clearError("reason");
+              }}
+            >
               <SelectTrigger
                 id="correction-reason"
                 className="w-full sm:w-80"
@@ -136,7 +145,11 @@ export function OrderCorrection({ order, onDone }: { order: OrderDetail; onDone:
             error={errors.note}
             hint={`What happened? ${NOTE_MIN}–${NOTE_MAX} characters, shown in the timeline.`}
           >
-            <Textarea rows={3} maxLength={NOTE_MAX} value={note} onChange={(e) => setNote(e.target.value)} />
+            <Textarea rows={3} maxLength={NOTE_MAX} value={note} onChange={(e) => {
+                setNote(e.target.value);
+                if (e.target.value.trim().length >= NOTE_MIN) clearError("note");
+              }}
+            />
           </FormField>
 
           {needsCash ? (
@@ -146,7 +159,10 @@ export function OrderCorrection({ order, onDone }: { order: OrderDetail; onDone:
               </legend>
               <RadioGroup
                 value={cash}
-                onValueChange={(v) => setCash(v as "yes" | "no")}
+                onValueChange={(v) => {
+                  setCash(v as "yes" | "no");
+                  clearError("cash");
+                }}
                 className="flex gap-6"
                 aria-describedby={errors.cash ? "correction-cash-error" : undefined}
               >
