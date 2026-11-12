@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Download, ImageIcon, RefreshCw, Scaling } from "lucide-react";
 import { toast } from "react-hot-toast";
 import api from "@/lib/authAxios";
+import { IMAGE_SIDE_MAX, IMAGE_SIDE_MIN, IMAGE_SIDE_RULE, isValidImageSide } from "@/lib/image-limits";
 import { useToolUpload } from "@/hooks/useToolUpload";
 import SubscriptionRequiredModal from "@/components/modal/SubscriptionRequiredModal";
 import { ActionButton } from "@/components/tools/ActionButton";
@@ -98,10 +99,16 @@ export default function ImageResizeClient() {
           toast.error("Enter a width and a height.");
           return;
         }
+        const w = Number(width);
+        const h = Number(height);
+        if (!isValidImageSide(w) || !isValidImageSide(h)) {
+          toast.error(IMAGE_SIDE_RULE);
+          return;
+        }
         const formData = new FormData();
         formData.append("file", tool.file);
-        formData.append("width", width);
-        formData.append("height", height);
+        formData.append("width", String(w));
+        formData.append("height", String(h));
         const res = await api.post("/ocr/image/resize", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
@@ -162,8 +169,8 @@ export default function ImageResizeClient() {
                     id="width"
                     type="number"
                     inputMode="numeric"
-                    min={16}
-                    max={4096}
+                    min={IMAGE_SIDE_MIN}
+                    max={IMAGE_SIDE_MAX}
                     value={width}
                     onChange={(e) => onWidth(e.target.value)}
                   />
@@ -174,8 +181,8 @@ export default function ImageResizeClient() {
                     id="height"
                     type="number"
                     inputMode="numeric"
-                    min={16}
-                    max={4096}
+                    min={IMAGE_SIDE_MIN}
+                    max={IMAGE_SIDE_MAX}
                     value={height}
                     onChange={(e) => onHeight(e.target.value)}
                   />
