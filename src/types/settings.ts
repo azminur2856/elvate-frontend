@@ -1,12 +1,29 @@
 /**
  * Admin feature switches (API-CONTRACT.md → "Admin settings", BE-25 / FE-25,
- * and the face login switch, BE-27 / FE-27).
+ * the face login switch, BE-27 / FE-27) and delivery fees (BE-30 / FE-30).
  */
+
+/** The three delivery numbers, whole BDT. `freeThreshold` 0 = free delivery off. */
+export type ShippingFees = {
+  insideDhaka: number;
+  outsideDhaka: number;
+  /** Compared with the subtotal minus any coupon discount. */
+  freeThreshold: number;
+};
+
+/** `GET` / `PATCH /admin/settings/shipping` (ADMIN only). */
+export type ShippingSettings = ShippingFees & {
+  /** ISO date of the last change; `null` if never changed. */
+  updatedAt: string | null;
+  updatedBy: { name: string } | null;
+};
 
 /** `GET /settings/public` (no login needed). */
 export type PublicSettings = {
   smsOtpEnabled: boolean;
   faceLoginEnabled: boolean;
+  /** BE-30; missing on older servers. */
+  shipping?: ShippingFees;
 };
 
 export type AdminSettingKey = "sms_otp" | "face_login";
