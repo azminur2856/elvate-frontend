@@ -38,6 +38,13 @@ const ACTION_LABELS: Record<OrderStatus, string> = {
 };
 const DESTRUCTIVE: OrderStatus[] = ["CANCELLED", "RETURNED"];
 
+/** After a rider's return request (SEC-09) the two moves read differently. */
+function actionLabel(from: OrderStatus, to: OrderStatus): string {
+  if (from === "RETURN_REQUESTED" && to === "RETURNED") return "Confirm return";
+  if (from === "RETURN_REQUESTED" && to === "OUT_FOR_DELIVERY") return "Send out again";
+  return ACTION_LABELS[to];
+}
+
 export default function AdminOrderDetailClient({ id }: { id: string }) {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "notFound" | "error">("loading");
@@ -215,7 +222,7 @@ export default function AdminOrderDetailClient({ id }: { id: string }) {
                 className={DESTRUCTIVE.includes(s) ? "text-destructive hover:text-destructive" : undefined}
                 onClick={() => setNextStatus(s)}
               >
-                {ACTION_LABELS[s]}
+                {actionLabel(order.status, s)}
               </Button>
             ))}
           </CardContent>
@@ -375,17 +382,17 @@ export default function AdminOrderDetailClient({ id }: { id: string }) {
             setNote("");
           }
         }}
-        title={nextStatus ? `${ACTION_LABELS[nextStatus]}?` : ""}
+        title={nextStatus ? `${actionLabel(order.status, nextStatus)}?` : ""}
         description={
           nextStatus === "CANCELLED"
             ? "Stock goes back on sale and the coupon use is released. Paid card orders are refunded."
             : nextStatus === "RETURNED"
-              ? "Stock goes back on sale and the coupon use is released."
+              ? "Only confirm once the parcel is back in the shop. Stock goes back on sale, the coupon use is released and paid card orders are refunded."
               : nextStatus === "DELIVERED" && order.paymentMethod === "COD"
                 ? "The cash on delivery payment is marked as received."
                 : `The order moves to “${nextStatus ? ORDER_STATUS_LABELS[nextStatus] : ""}”. The customer sees this in their timeline.`
         }
-        confirmLabel={nextStatus ? ACTION_LABELS[nextStatus] : "Confirm"}
+        confirmLabel={nextStatus ? actionLabel(order.status, nextStatus) : "Confirm"}
         destructive={nextStatus ? DESTRUCTIVE.includes(nextStatus) : false}
         loading={changing}
         onConfirm={changeStatus}
