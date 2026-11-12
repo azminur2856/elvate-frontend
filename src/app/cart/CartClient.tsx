@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, ShoppingBag } from "lucide-react";
+import { AlertTriangle, ArrowRight, ShoppingBag, Truck } from "lucide-react";
 import { lineKey, useCart } from "@/components/cart/CartProvider";
 import { CartLineItem, lineProblem } from "@/components/cart/CartLineItem";
+import { useFeatureFlags } from "@/components/settings/FeatureFlagsProvider";
 import { PageShell } from "@/components/shared/PageShell";
 import { EmptyState } from "@/components/shop/EmptyState";
 import { FormMessage } from "@/components/forms/FormMessage";
@@ -12,9 +13,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatBDT } from "@/lib/format";
 import { loginHref } from "@/lib/redirect";
+import { freeDeliveryProgress } from "@/lib/shipping";
+import { cn } from "@/lib/utils";
 
 export default function CartClient() {
   const { cart, ready, loggedIn } = useCart();
+  const { shipping } = useFeatureFlags();
+  const freeDelivery = freeDeliveryProgress(cart.subtotal, shipping?.freeThreshold);
   const problems = cart.items.filter((l) => lineProblem(l)).length;
   const checkoutHref = loggedIn ? "/checkout" : loginHref("/checkout");
 
@@ -91,6 +96,27 @@ export default function CartClient() {
                 <dd className="text-muted-foreground">At checkout</dd>
               </div>
             </dl>
+            {/* FE-30: only while free delivery is on; checkout shows the exact quote (with coupons). */}
+            <div aria-live="polite">
+              {freeDelivery ? (
+                <div className="grid gap-2 rounded-md bg-muted px-3 py-2.5 text-sm">
+                  <p className="flex items-center gap-2 font-medium">
+                    <Truck
+                      aria-hidden="true"
+                      className={cn("size-4 shrink-0", freeDelivery.free ? "text-success" : "text-brand")}
+                    />
+                    {freeDelivery.free
+                      ? "You get free delivery."
+                      : `Add ${formatBDT(freeDelivery.remaining)} more for free delivery`}
+                  </p>
+                  {!freeDelivery.free ? (
+                    <div aria-hidden="true" className="h-1.5 overflow-hidden rounded-full bg-background">
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${freeDelivery.percent}%` }} />
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
             <div className="flex items-baseline justify-between border-t pt-4">
               <span className="font-semibold">Estimated total</span>
               <span className="font-heading text-xl font-bold tabular-nums">{formatBDT(cart.subtotal)}</span>
