@@ -6,6 +6,7 @@ import { toast } from "react-hot-toast";
 import api from "@/lib/authAxios";
 import { getErrorMessage } from "@/lib/errors";
 import type { AdminSetting, AdminSettingKey } from "@/types/settings";
+import { DeliveryFeesCard } from "@/components/admin/settings/DeliveryFeesCard";
 import { FormMessage } from "@/components/forms/FormMessage";
 import { useFeatureFlags } from "@/components/settings/FeatureFlagsProvider";
 import { LocalTime } from "@/components/shared/LocalTime";
@@ -105,68 +106,77 @@ export default function AdminSettingsClient() {
   const confirmCopy = confirming ? CONFIRM[confirming.setting.key] : undefined;
 
   return (
-    <PageShell width="md" title="Settings" description="Switch features on or off for the whole site.">
-      {loadError ? (
-        <div className="grid justify-items-start gap-3">
-          <FormMessage variant="error">{loadError}</FormMessage>
-          <Button variant="outline" size="sm" onClick={() => void load()}>
-            Try again
-          </Button>
-        </div>
-      ) : !settings ? (
-        <Skeleton className="h-32 w-full rounded-xl" />
-      ) : settings.length === 0 ? (
-        <p className="text-muted-foreground">There are no settings to change.</p>
-      ) : (
-        <div className="grid gap-4">
-          {settings.map((s) => {
-            const switchId = `setting-${s.key}`;
-            const descriptionId = `${switchId}-description`;
-            // Not configured: can't be turned on (409), but an "on" switch can still be turned off.
-            const unavailable = !s.available && !s.enabled;
-            return (
-              <Card key={s.key}>
-                <CardContent className="grid gap-3">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="grid gap-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Label htmlFor={switchId} className="text-base font-semibold">
-                          {s.label}
-                        </Label>
-                        <Badge variant={s.enabled ? "success" : "secondary"}>{s.enabled ? "On" : "Off"}</Badge>
+    <PageShell
+      width="md"
+      title="Settings"
+      description="Switch features on or off and set the delivery fees for the whole site."
+    >
+      <div className="grid gap-4">
+        {loadError ? (
+          <div className="grid justify-items-start gap-3">
+            <FormMessage variant="error">{loadError}</FormMessage>
+            <Button variant="outline" size="sm" onClick={() => void load()}>
+              Try again
+            </Button>
+          </div>
+        ) : !settings ? (
+          <Skeleton className="h-32 w-full rounded-xl" />
+        ) : settings.length === 0 ? (
+          <p className="text-muted-foreground">There are no settings to change.</p>
+        ) : (
+          <div className="grid gap-4">
+            {settings.map((s) => {
+              const switchId = `setting-${s.key}`;
+              const descriptionId = `${switchId}-description`;
+              // Not configured: can't be turned on (409), but an "on" switch can still be turned off.
+              const unavailable = !s.available && !s.enabled;
+              return (
+                <Card key={s.key}>
+                  <CardContent className="grid gap-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="grid gap-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Label htmlFor={switchId} className="text-base font-semibold">
+                            {s.label}
+                          </Label>
+                          <Badge variant={s.enabled ? "success" : "secondary"}>{s.enabled ? "On" : "Off"}</Badge>
+                        </div>
+                        <p id={descriptionId} className="text-sm text-muted-foreground">
+                          {s.description}
+                        </p>
                       </div>
-                      <p id={descriptionId} className="text-sm text-muted-foreground">
-                        {s.description}
-                      </p>
+                      <Switch
+                        id={switchId}
+                        checked={s.enabled}
+                        onCheckedChange={(v) => toggle(s, v)}
+                        disabled={saving === s.key || unavailable}
+                        aria-describedby={descriptionId}
+                      />
                     </div>
-                    <Switch
-                      id={switchId}
-                      checked={s.enabled}
-                      onCheckedChange={(v) => toggle(s, v)}
-                      disabled={saving === s.key || unavailable}
-                      aria-describedby={descriptionId}
-                    />
-                  </div>
-                  {!s.available ? (
-                    <p className="text-sm font-medium text-warning">
-                      {UNAVAILABLE_NOTE[s.key] ?? "Not available on this server"}
+                    {!s.available ? (
+                      <p className="text-sm font-medium text-warning">
+                        {UNAVAILABLE_NOTE[s.key] ?? "Not available on this server"}
+                      </p>
+                    ) : null}
+                    <p className="text-xs text-muted-foreground">
+                      {s.updatedBy ? (
+                        <>
+                          Last changed by {s.updatedBy.name} · <LocalTime value={s.updatedAt} mode="datetime" />
+                        </>
+                      ) : (
+                        "Not changed yet (default)"
+                      )}
                     </p>
-                  ) : null}
-                  <p className="text-xs text-muted-foreground">
-                    {s.updatedBy ? (
-                      <>
-                        Last changed by {s.updatedBy.name} · <LocalTime value={s.updatedAt} mode="datetime" />
-                      </>
-                    ) : (
-                      "Not changed yet (default)"
-                    )}
-                  </p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+
+        {/* BE-30: its own load, so it works even if the switches fail to load. */}
+        <DeliveryFeesCard onSaved={() => void refreshFlags()} />
+      </div>
 
       <ConfirmDialog
         open={Boolean(confirming)}
